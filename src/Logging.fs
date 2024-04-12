@@ -60,10 +60,7 @@ let private createLogger level log =
           logWarning = fun message -> log message Warning
           logError = fun message -> log message Error }
 
-let private setLogger logLevel loggerProvider =
-
-    let level = getLevel logLevel
-
+let private configureLogger logLevel loggerProvider =
     match loggerProvider with
     | Console ->
         let consoleLogProcessor =
@@ -87,6 +84,6 @@ let private setLogger logLevel loggerProvider =
             | Trace -> consoleLogProcessor.Post(fun timeStamp -> $"\u001b[90mTrace\u001b[0m [{timeStamp}] {message}")
             | _ -> consoleLogProcessor.Post(fun timeStamp -> $"\u001b[32mInfo\u001b[0m [{timeStamp}] {message}")
 
-        level |> createLogger <| consoleLog
+        logLevel |> getLevel |> createLogger <| consoleLog
 
-let getConsoleLogger logLevel = setLogger logLevel Console
+let getConsoleLogger logLevel = configureLogger logLevel Console

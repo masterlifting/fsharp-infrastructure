@@ -1,13 +1,12 @@
-module Configuration
+module Infrastructure.Configuration
 
 open Microsoft.Extensions.Configuration
 
-let private settings =
+let setJsonConfiguration file =
     ConfigurationBuilder()
-        .AddJsonFile("appsettings.json", optional = false, reloadOnChange = true)
+        .AddJsonFile(file, optional = false, reloadOnChange = true)
         .Build()
 
-let getSection<'T> name =
-    let section = settings.GetSection(name)
-
-    if section.Exists() then section.Get<'T>() |> Some else None
+let getSection<'a> (config: IConfigurationRoot) name =
+    let section = config.GetSection(name)
+    if section.Exists() then section.Get<'a>() |> Some else None

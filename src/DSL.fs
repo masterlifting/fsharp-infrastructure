@@ -1,4 +1,4 @@
-module DSL
+module Infrastructure.DSL
 
 open System
 

@@ -2,7 +2,7 @@ module Infrastructure.Configuration
 
 open Microsoft.Extensions.Configuration
 
-let setJsonConfiguration file =
+let getJsonConfiguration file =
     ConfigurationBuilder()
         .AddJsonFile(file, optional = false, reloadOnChange = true)
         .Build()

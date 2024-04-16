@@ -1,6 +1,8 @@
 module Infrastructure.Logging
 
-type private Provider = | Console
+type private Provider =
+    | Console
+    | File
 
 type private Logger =
     { logTrace: string -> unit
@@ -82,6 +84,25 @@ let private configLogger logLevelstr provider =
 
         logger <- Some(logLevel |> createLogger <| logToConsole)
 
+    | File ->
+
+        let log createMessage =
+            let message =
+                createMessage <| System.DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
+
+
+            System.IO.File.AppendAllText("log.txt", message + System.Environment.NewLine)
+
+        let logToFile message level =
+            match level with
+            | Error -> log <| fun timeStamp -> $"Error [{timeStamp}] {message}"
+            | Warning -> log <| fun timeStamp -> $"Warning [{timeStamp}] {message}"
+            | Debug -> log <| fun timeStamp -> $"Debug [{timeStamp}] {message}"
+            | Trace -> log <| fun timeStamp -> $"Trace [{timeStamp}] {message}"
+            | _ -> log <| fun timeStamp -> $"Info [{timeStamp}] {message}"
+
+        logger <- Some(logLevel |> createLogger <| logToFile)
+
 let private logProcessor =
     MailboxProcessor.Start(fun inbox ->
         let rec innerLoop () =
@@ -101,6 +122,11 @@ let useConsoleLogger config =
     Configuration.getSection<string> config "Logging:LogLevel:Default"
     |> configLogger
     <| Console
+
+let useFileLogger config =
+    Configuration.getSection<string> config "Logging:LogLevel:Default"
+    |> configLogger
+    <| File
 
 module Log =
     let trace m =

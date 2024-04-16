@@ -2,7 +2,7 @@ module Infrastructure.Logging
 
 type private Provider = | Console
 
-type Logger =
+type private Logger =
     { logTrace: string -> unit
       logDebug: string -> unit
       logInfo: string -> unit
@@ -15,6 +15,8 @@ type private Level =
     | Information
     | Debug
     | Trace
+
+let mutable private logger: Logger option = None
 
 let private getLevel level =
     match level with
@@ -63,27 +65,56 @@ let private createLogger level log =
 let private configureLogger logLevel loggerProvider =
     match loggerProvider with
     | Console ->
-        let consoleLogProcessor =
-            MailboxProcessor.Start(fun inbox ->
-                let rec innerLoop () =
-                    async {
-                        let! getMessage = inbox.Receive()
-                        let message = getMessage <| System.DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
-                        printfn $"{message}"
-                        return! innerLoop ()
-                    }
 
-                innerLoop ())
+        let log createMessage =
+            createMessage <| System.DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
+            |> printfn
 
-        let consoleLog message level =
+
+        let logToConsole message level =
             match level with
-            | Error -> consoleLogProcessor.Post(fun timeStamp -> $"\u001b[31mError [{timeStamp}] {message}\u001b[0m")
-            | Warning ->
-                consoleLogProcessor.Post(fun timeStamp -> $"\u001b[33mWarning\u001b[0m [{timeStamp}] {message}")
-            | Debug -> consoleLogProcessor.Post(fun timeStamp -> $"\u001b[36mDebug\u001b[0m [{timeStamp}] {message}")
-            | Trace -> consoleLogProcessor.Post(fun timeStamp -> $"\u001b[90mTrace\u001b[0m [{timeStamp}] {message}")
-            | _ -> consoleLogProcessor.Post(fun timeStamp -> $"\u001b[32mInfo\u001b[0m [{timeStamp}] {message}")
+            | Error -> log (fun timeStamp -> $"\u001b[31mError [{timeStamp}] {message}\u001b[0m")
+            | Warning -> log (fun timeStamp -> $"\u001b[33mWarning\u001b[0m [{timeStamp}] {message}")
+            | Debug -> log (fun timeStamp -> $"\u001b[36mDebug\u001b[0m [{timeStamp}] {message}")
+            | Trace -> log (fun timeStamp -> $"\u001b[90mTrace\u001b[0m [{timeStamp}] {message}")
+            | _ -> log (fun timeStamp -> $"\u001b[32mInfo\u001b[0m [{timeStamp}] {message}")
 
-        logLevel |> getLevel |> createLogger <| consoleLog
+        let logger' = logLevel |> getLevel |> createLogger <| logToConsole
 
-let getConsoleLogger logLevel = configureLogger logLevel Console
+        logger <- Some logger'
+
+let private logProcessor =
+    MailboxProcessor.Start(fun inbox ->
+        let rec innerLoop () =
+            async {
+                let! logMessage = inbox.Receive()
+
+                match logger with
+                | Some logger' -> logMessage logger'
+                | None -> ()
+
+                return! innerLoop ()
+            }
+
+        innerLoop ())
+
+let useConsoleLogger config =
+    Configuration.getSection<string> config "Logging:LogLevel:Default"
+    |> configureLogger
+    <| Console
+
+module Log =
+    let trace m =
+        logProcessor.Post(fun logger' -> logger'.logTrace m)
+
+    let debug m =
+        logProcessor.Post(fun logger' -> logger'.logDebug m)
+
+    let info m =
+        logProcessor.Post(fun logger' -> logger'.logInfo m)
+
+    let warning m =
+        logProcessor.Post(fun logger' -> logger'.logWarning m)
+
+    let error m =
+        logProcessor.Post(fun logger' -> logger'.logError m)

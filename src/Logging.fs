@@ -18,7 +18,7 @@ type private Level =
 
 let mutable private logger: Logger option = None
 
-let private getLevel level =
+let private parseLevel level =
     match level with
     | Some value ->
         match value with
@@ -62,26 +62,25 @@ let private createLogger level log =
           logWarning = fun message -> log message Warning
           logError = fun message -> log message Error }
 
-let private configureLogger logLevel loggerProvider =
-    match loggerProvider with
+let private configLogger logLevelstr provider =
+    let logLevel = parseLevel logLevelstr
+
+    match provider with
     | Console ->
 
         let log createMessage =
             createMessage <| System.DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
             |> printfn
 
-
         let logToConsole message level =
             match level with
-            | Error -> log (fun timeStamp -> $"\u001b[31mError [{timeStamp}] {message}\u001b[0m")
-            | Warning -> log (fun timeStamp -> $"\u001b[33mWarning\u001b[0m [{timeStamp}] {message}")
-            | Debug -> log (fun timeStamp -> $"\u001b[36mDebug\u001b[0m [{timeStamp}] {message}")
-            | Trace -> log (fun timeStamp -> $"\u001b[90mTrace\u001b[0m [{timeStamp}] {message}")
-            | _ -> log (fun timeStamp -> $"\u001b[32mInfo\u001b[0m [{timeStamp}] {message}")
+            | Error -> log <| fun timeStamp -> $"\u001b[31mError [{timeStamp}] {message}\u001b[0m"
+            | Warning -> log <| fun timeStamp -> $"\u001b[33mWarning\u001b[0m [{timeStamp}] {message}"
+            | Debug -> log <| fun timeStamp -> $"\u001b[36mDebug\u001b[0m [{timeStamp}] {message}"
+            | Trace -> log <| fun timeStamp -> $"\u001b[90mTrace\u001b[0m [{timeStamp}] {message}"
+            | _ -> log <| fun timeStamp -> $"\u001b[32mInfo\u001b[0m [{timeStamp}] {message}"
 
-        let logger' = logLevel |> getLevel |> createLogger <| logToConsole
-
-        logger <- Some logger'
+        logger <- Some(logLevel |> createLogger <| logToConsole)
 
 let private logProcessor =
     MailboxProcessor.Start(fun inbox ->
@@ -100,21 +99,21 @@ let private logProcessor =
 
 let useConsoleLogger config =
     Configuration.getSection<string> config "Logging:LogLevel:Default"
-    |> configureLogger
+    |> configLogger
     <| Console
 
 module Log =
     let trace m =
-        logProcessor.Post(fun logger' -> logger'.logTrace m)
+        logProcessor.Post <| fun logger' -> logger'.logTrace m
 
     let debug m =
-        logProcessor.Post(fun logger' -> logger'.logDebug m)
+        logProcessor.Post <| fun logger' -> logger'.logDebug m
 
     let info m =
-        logProcessor.Post(fun logger' -> logger'.logInfo m)
+        logProcessor.Post <| fun logger' -> logger'.logInfo m
 
     let warning m =
-        logProcessor.Post(fun logger' -> logger'.logWarning m)
+        logProcessor.Post <| fun logger' -> logger'.logWarning m
 
     let error m =
-        logProcessor.Post(fun logger' -> logger'.logError m)
+        logProcessor.Post <| fun logger' -> logger'.logError m

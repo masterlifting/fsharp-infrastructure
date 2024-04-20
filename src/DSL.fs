@@ -3,6 +3,11 @@ module Infrastructure.DSL
 open System
 
 module AP =
+    let (|IsString|_|) (input: string) =
+        match String.IsNullOrWhiteSpace input with
+        | false -> Some input
+        | _ -> None
+
     let (|IsInt|_|) (input: string) =
         match Int32.TryParse input with
         | true, value -> Some value
@@ -16,6 +21,11 @@ module AP =
     let (|IsTimeSpan|_|) (input: string) =
         match TimeSpan.TryParse input with
         | true, value -> Some value
+        | _ -> None
+
+    let (|IsLettersOrNumbers|_|) (input: string) =
+        match Text.RegularExpressions.Regex.IsMatch(input, "^[a-zA-Z0-9]+$") with
+        | true -> Some input
         | _ -> None
 
 module Seq =

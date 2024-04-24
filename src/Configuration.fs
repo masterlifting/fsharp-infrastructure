@@ -7,6 +7,6 @@ let getJsonConfiguration file =
         .AddJsonFile(file, optional = false, reloadOnChange = true)
         .Build()
 
-let getSection<'a> (config: IConfigurationRoot) name =
-    let section = config.GetSection(name)
+let getSection<'a> (configuration: IConfigurationRoot) sectionName =
+    let section = configuration.GetSection(sectionName)
     if section.Exists() then section.Get<'a>() |> Some else None

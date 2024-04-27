@@ -4,7 +4,7 @@ open System
 
 module AP =
     let (|IsString|_|) (input: string) =
-        match String.IsNullOrWhiteSpace input with
+        match not <| String.IsNullOrWhiteSpace input with
         | false -> Some input
         | _ -> None
 

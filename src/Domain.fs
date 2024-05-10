@@ -1,0 +1,2 @@
+﻿module fsharp-infrastructure.Domain
+

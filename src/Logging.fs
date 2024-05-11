@@ -103,6 +103,8 @@ let private configLogger logLevelstr provider =
 
         logger <- Some(logLevel |> createLogger <| logToFile)
 
+    logger.Value.logInfo "Logging initialized as a Static service."
+
 let private logProcessor =
     MailboxProcessor.Start(fun inbox ->
         let rec innerLoop () =

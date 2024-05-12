@@ -56,13 +56,13 @@ module Seq =
         async {
             if collection.Length > 0 then
                 match collection |> List.takeWhile (fun step -> step.IsParallel) with
-                | parallelItems when parallelItems.Length < 2 ->
+                | parallelItemHead :: parallelItemsTail when parallelItemsTail.Length = 0 ->
 
                     let sequentialItems =
-                        collection |> List.take 1 |> List.takeWhile (fun step -> not step.IsParallel)
+                        collection |> List.skip 1 |> List.takeWhile (fun step -> not step.IsParallel)
 
                     do!
-                        sequentialItems
+                        [ parallelItemHead ] @ sequentialItems
                         |> List.map (fun item ->
                             let name =
                                 let parentName = Option.defaultValue "" name
@@ -75,8 +75,6 @@ module Seq =
                             handle name item)
                         |> Async.Sequential
                         |> Async.Ignore
-
-                    do! parallelOrSequential name (collection |> List.skip sequentialItems.Length) handle
 
                 | parallelItems ->
 
@@ -94,8 +92,6 @@ module Seq =
                             handle name item)
                         |> Async.Parallel
                         |> Async.Ignore
-
-                    do! parallelOrSequential name (collection |> List.skip parallelItems.Length) handle
         }
 
 module SerDe =

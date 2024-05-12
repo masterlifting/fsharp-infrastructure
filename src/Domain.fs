@@ -1,5 +1,9 @@
 ﻿module Infrastructure.Domain
 
+type IParallelOrSequential =
+    abstract member Name: string option
+    abstract member IsParallel: bool
+
 module Errors =
     type InfrastructureError =
         | InvalidResponse of string

@@ -29,6 +29,9 @@ module AP =
         | _ -> None
 
 module Seq =
+    open Domain
+    open System.Threading
+
     let resultOrError collection =
         let checkItemResult state itemResult =
             match state with
@@ -41,6 +44,59 @@ module Seq =
         match Seq.fold checkItemResult (Ok []) collection with
         | Error error -> Error error
         | Ok items -> Ok <| List.rev items
+
+    /// <summary>
+    /// Executes a sequence of asynchronous operations in parallel or sequentially.
+    /// </summary>
+    /// <param name="name">The name of the parent node.</param>
+    /// <param name="collection">The collection of the nodes.</param>
+    /// <param name="handle">The handler of the node.</param>
+    /// <returns>The asynchronous operation.</returns>
+    let rec parallelOrSequential name (collection: #IParallelOrSequential list) handle =
+        async {
+            if collection.Length > 0 then
+                match collection |> List.takeWhile (fun step -> step.IsParallel) with
+                | parallelItems when parallelItems.Length < 2 ->
+
+                    let sequentialItems =
+                        collection |> List.take 1 |> List.takeWhile (fun step -> not step.IsParallel)
+
+                    do!
+                        sequentialItems
+                        |> List.map (fun item ->
+                            let name =
+                                let parentName = Option.defaultValue "" name
+                                let itemName = Option.defaultValue "" item.Name
+
+                                match parentName with
+                                | "" -> itemName
+                                | _ -> $"{parentName}.{itemName}"
+
+                            handle name item)
+                        |> Async.Sequential
+                        |> Async.Ignore
+
+                    do! parallelOrSequential name (collection |> List.skip sequentialItems.Length) handle
+
+                | parallelItems ->
+
+                    do!
+                        parallelItems
+                        |> List.map (fun item ->
+                            let name =
+                                let parentName = Option.defaultValue "" name
+                                let itemName = Option.defaultValue "" item.Name
+
+                                match parentName with
+                                | "" -> itemName
+                                | _ -> $"{parentName}.{itemName}"
+
+                            handle name item)
+                        |> Async.Parallel
+                        |> Async.Ignore
+
+                    do! parallelOrSequential name (collection |> List.skip parallelItems.Length) handle
+        }
 
 module SerDe =
     module Json =

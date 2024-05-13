@@ -1,10 +1,13 @@
 ﻿module Infrastructure.Domain
 
+type ITree =
+    abstract member Name: string
+
 type ITreeHandler =
     abstract member Name: string
+    abstract member Nodes: ITreeHandler list
     abstract member IsParallel: bool
     abstract member Handle: (unit -> Async<Result<string, string>>) option
-    abstract member Nodes: ITreeHandler list
 
 module Errors =
     type InfrastructureError =

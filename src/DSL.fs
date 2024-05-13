@@ -45,13 +45,29 @@ module Seq =
 
 module Tree =
     open Domain
-
+    
     let buildNodeName parentName nodeName =
         let parentName = Option.defaultValue "" parentName
 
         match parentName with
         | "" -> nodeName
         | _ -> $"{parentName}.{nodeName}"
+
+    let findNode nodeName nodes =
+
+        let rec innerLoop targetName nodeName (nodes: #ITree list) node =
+            match nodes, node with
+            | [], _ -> None
+            | _, Some node -> Some node
+            | head::tail, _ ->
+                let nodeName = nodeName |> buildNodeName <| head.Name
+
+                if nodeName = targetName then
+                    innerLoop targetName (Some nodeName) tail (Some head)
+                else
+                    innerLoop targetName (Some nodeName) tail None
+        
+        innerLoop nodeName None nodes None
 
     /// <summary>
     /// Executes a sequence of asynchronous operations in parallel or sequentially.
@@ -60,35 +76,33 @@ module Tree =
     /// <param name="collection">The collection of the nodes.</param>
     /// <param name="handle">The handler of the node.</param>
     /// <returns>The asynchronous operation.</returns>
-    let rec doParallelOrSequential name (nodes: ITreeHandler list) handleNode =
+    let rec doParallelOrSequential<'a> name (nodes: ITreeHandler list) handleNode =
 
-        let handle (node: ITreeHandler) =
+        let inline handle (node: ITreeHandler) =
             async {
                 let nodeName = name |> buildNodeName <| node.Name
-                do! doParallelOrSequential (Some nodeName) node.Nodes handleNode
                 do! handleNode nodeName node
+                do! doParallelOrSequential (Some nodeName) node.Nodes handleNode
             }
 
         async {
             if nodes.Length > 0 then
-                match nodes |> List.takeWhile (fun node -> node.IsParallel) with
-                | parallelNodes when parallelNodes.Length < 2 ->
+                let (task, skipLength) =
+                    match nodes |> List.takeWhile (fun node -> node.IsParallel) with
+                    | parallelNodes when parallelNodes.Length < 2 ->
 
-                    let sequentialNodes =
-                        nodes |> List.skip 1 |> List.takeWhile (fun node -> not node.IsParallel)
+                        let sequentialNodes =
+                            nodes |> List.skip 1 |> List.takeWhile (fun node -> not node.IsParallel)
 
-                    do!
-                        [ nodes[0] ] @ sequentialNodes
-                        |> List.map handle
-                        |> Async.Sequential
-                        |> Async.Ignore
+                        let task = [ nodes[0] ] @ sequentialNodes |> List.map handle |> Async.Sequential
+                        (task, sequentialNodes.Length + 1)
 
-                    do! doParallelOrSequential name (nodes |> List.skip (sequentialNodes.Length + 1)) handleNode
+                    | parallelNodes ->
+                        let task = parallelNodes |> List.map handle |> Async.Parallel
+                        (task, parallelNodes.Length)
 
-                | parallelNodes ->
-                    do! parallelNodes |> List.map handle |> Async.Parallel |> Async.Ignore
-
-                    do! doParallelOrSequential name (nodes |> List.skip parallelNodes.Length) handleNode
+                do! task |> Async.Ignore
+                do! doParallelOrSequential name (nodes |> List.skip skipLength) handleNode
         }
 
 module SerDe =

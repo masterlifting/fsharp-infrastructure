@@ -29,8 +29,6 @@ module AP =
         | _ -> None
 
 module Seq =
-    open Domain
-    open System.Threading
 
     let resultOrError collection =
         let checkItemResult state itemResult =
@@ -45,6 +43,16 @@ module Seq =
         | Error error -> Error error
         | Ok items -> Ok <| List.rev items
 
+module Tree =
+    open Domain
+
+    let buildNodeName parentName nodeName =
+        let parentName = Option.defaultValue "" parentName
+
+        match parentName with
+        | "" -> nodeName
+        | _ -> $"{parentName}.{nodeName}"
+
     /// <summary>
     /// Executes a sequence of asynchronous operations in parallel or sequentially.
     /// </summary>
@@ -52,46 +60,35 @@ module Seq =
     /// <param name="collection">The collection of the nodes.</param>
     /// <param name="handle">The handler of the node.</param>
     /// <returns>The asynchronous operation.</returns>
-    let rec parallelOrSequential name (collection: #IParallelOrSequential list) handle =
-        async {
-            if collection.Length > 0 then
-                match collection |> List.takeWhile (fun step -> step.IsParallel) with
-                | parallelItemHead :: parallelItemsTail when parallelItemsTail.Length = 0 ->
+    let rec doParallelOrSequential name (nodes: ITreeHandler list) handleNode =
 
-                    let sequentialItems =
-                        collection |> List.skip 1 |> List.takeWhile (fun step -> not step.IsParallel)
+        let handle (node: ITreeHandler) =
+            async {
+                let nodeName = name |> buildNodeName <| node.Name
+                do! doParallelOrSequential (Some nodeName) node.Nodes handleNode
+                do! handleNode nodeName node
+            }
+
+        async {
+            if nodes.Length > 0 then
+                match nodes |> List.takeWhile (fun node -> node.IsParallel) with
+                | parallelNodes when parallelNodes.Length < 2 ->
+
+                    let sequentialNodes =
+                        nodes |> List.skip 1 |> List.takeWhile (fun node -> not node.IsParallel)
 
                     do!
-                        [ parallelItemHead ] @ sequentialItems
-                        |> List.map (fun item ->
-                            let name =
-                                let parentName = Option.defaultValue "" name
-                                let itemName = Option.defaultValue "" item.Name
-
-                                match parentName with
-                                | "" -> itemName
-                                | _ -> $"{parentName}.{itemName}"
-
-                            handle name item)
+                        [ nodes[0] ] @ sequentialNodes
+                        |> List.map handle
                         |> Async.Sequential
                         |> Async.Ignore
 
-                | parallelItems ->
+                    do! doParallelOrSequential name (nodes |> List.skip (sequentialNodes.Length + 1)) handleNode
 
-                    do!
-                        parallelItems
-                        |> List.map (fun item ->
-                            let name =
-                                let parentName = Option.defaultValue "" name
-                                let itemName = Option.defaultValue "" item.Name
+                | parallelNodes ->
+                    do! parallelNodes |> List.map handle |> Async.Parallel |> Async.Ignore
 
-                                match parentName with
-                                | "" -> itemName
-                                | _ -> $"{parentName}.{itemName}"
-
-                            handle name item)
-                        |> Async.Parallel
-                        |> Async.Ignore
+                    do! doParallelOrSequential name (nodes |> List.skip parallelNodes.Length) handleNode
         }
 
 module SerDe =

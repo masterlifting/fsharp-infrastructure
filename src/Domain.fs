@@ -1,8 +1,10 @@
 ﻿module Infrastructure.Domain
 
-type IParallelOrSequential =
-    abstract member Name: string option
+type ITreeHandler =
+    abstract member Name: string
     abstract member IsParallel: bool
+    abstract member Handle: (unit -> Async<Result<string, string>>) option
+    abstract member Nodes: ITreeHandler list
 
 module Errors =
     type InfrastructureError =

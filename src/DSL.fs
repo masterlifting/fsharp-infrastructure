@@ -67,6 +67,9 @@ module Graph =
 
         innerLoop nodeName None graph
 
+    let findNode'<'a when 'a :> IName> nodeName (graphs: Graph<'a> list) =
+        graphs |> List.choose (findNode nodeName) |> List.tryHead
+
     let rec doParallelOrSequential<'a when 'a :> IHandle> nodeName (nodes: Graph<'a> list) handleNode =
 
         let inline handle (graph: Graph<'a>) =
@@ -82,16 +85,13 @@ module Graph =
             if nodes.Length > 0 then
                 let task, skipLength =
 
-                    let parallelNodes =
-                        nodes |> List.takeWhile (fun node -> (node.deconstructed |> fst).IsParallel)
+                    let parallelNodes = nodes |> List.takeWhile (fun node -> node.current.IsParallel)
 
                     match parallelNodes with
                     | parallelNodes when parallelNodes.Length < 2 ->
 
                         let sequentialNodes =
-                            nodes
-                            |> List.skip 1
-                            |> List.takeWhile (fun node -> not (node.deconstructed |> fst).IsParallel)
+                            nodes |> List.skip 1 |> List.takeWhile (fun node -> not node.current.IsParallel)
 
                         let task = [ nodes[0] ] @ sequentialNodes |> List.map handle |> Async.Sequential
                         (task, sequentialNodes.Length + 1)

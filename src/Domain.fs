@@ -15,6 +15,14 @@ type Graph<'a when 'a :> IName> =
         match this with
         | Graph(node, nodes) -> (node, nodes)
 
+    member this.current =
+        match this with
+        | Graph(node, _) -> node
+
+    member this.nodes =
+        match this with
+        | Graph(_, nodes) -> nodes
+
 type ITreeHandler =
     abstract member Name: string
     abstract member Nodes: ITreeHandler list

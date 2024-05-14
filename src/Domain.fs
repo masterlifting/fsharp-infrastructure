@@ -1,33 +1,27 @@
 ﻿module Infrastructure.Domain
 
-type IName =
+type IGraphNodeName =
     abstract member Name: string
 
-type IHandle =
-    inherit IName
+type IGraphNodeHandle =
+    inherit IGraphNodeName
     abstract member IsParallel: bool
     abstract member Handle: (unit -> Async<Result<string, string>>) option
 
-type Graph<'a when 'a :> IName> =
+type Graph<'a when 'a :> IGraphNodeName> =
     | Graph of 'a * Graph<'a> list
 
-    member this.deconstructed =
+    member this.Deconstructed =
         match this with
         | Graph(node, nodes) -> (node, nodes)
 
-    member this.current =
+    member this.Current =
         match this with
         | Graph(node, _) -> node
 
-    member this.nodes =
+    member this.Children =
         match this with
         | Graph(_, nodes) -> nodes
-
-type ITreeHandler =
-    abstract member Name: string
-    abstract member Nodes: ITreeHandler list
-    abstract member IsParallel: bool
-    abstract member Handle: (unit -> Async<Result<string, string>>) option
 
 module Errors =
     type InfrastructureError =

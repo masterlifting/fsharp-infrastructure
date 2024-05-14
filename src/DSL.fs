@@ -53,45 +53,45 @@ module Graph =
         | "" -> nodeName
         | _ -> $"{parentName}.{nodeName}"
 
-    let findNode<'a when 'a :> IName> nodeName (graph: Graph<'a>) =
+    let findNode<'a when 'a :> IGraphNodeName> nodeName (graph: Graph<'a>) =
 
         let rec innerLoop targetName nodeName (graph: Graph<'a>) =
             match graph with
-            | Graph(node, nodes) ->
+            | Graph(node, children) ->
                 let nodeName = nodeName |> buildNodeName <| node.Name
 
                 if nodeName = targetName then
                     Some node
                 else
-                    nodes |> List.choose (innerLoop targetName (Some nodeName)) |> List.tryHead
+                    children |> List.choose (innerLoop targetName (Some nodeName)) |> List.tryHead
 
         innerLoop nodeName None graph
 
-    let findNode'<'a when 'a :> IName> nodeName (graphs: Graph<'a> list) =
+    let findNode'<'a when 'a :> IGraphNodeName> nodeName (graphs: Graph<'a> list) =
         graphs |> List.choose (findNode nodeName) |> List.tryHead
 
-    let rec doParallelOrSequential<'a when 'a :> IHandle> nodeName (nodes: Graph<'a> list) handleNode =
+    let rec doParallelOrSequential'<'a when 'a :> IGraphNodeHandle> nodeName (nodes: Graph<'a> list) handleNode =
 
         let inline handle (graph: Graph<'a>) =
             async {
-                let node, nodes = graph.deconstructed
+                let node, nodes = graph.Deconstructed
 
                 let nodeName = nodeName |> buildNodeName <| node.Name
                 do! handleNode nodeName node
-                do! doParallelOrSequential (Some nodeName) nodes handleNode
+                do! doParallelOrSequential' (Some nodeName) nodes handleNode
             }
 
         async {
             if nodes.Length > 0 then
                 let task, skipLength =
 
-                    let parallelNodes = nodes |> List.takeWhile (fun node -> node.current.IsParallel)
+                    let parallelNodes = nodes |> List.takeWhile (fun node -> node.Current.IsParallel)
 
                     match parallelNodes with
                     | parallelNodes when parallelNodes.Length < 2 ->
 
                         let sequentialNodes =
-                            nodes |> List.skip 1 |> List.takeWhile (fun node -> not node.current.IsParallel)
+                            nodes |> List.skip 1 |> List.takeWhile (fun node -> not node.Current.IsParallel)
 
                         let task = [ nodes[0] ] @ sequentialNodes |> List.map handle |> Async.Sequential
                         (task, sequentialNodes.Length + 1)
@@ -101,7 +101,16 @@ module Graph =
                         (task, parallelNodes.Length)
 
                 do! task |> Async.Ignore
-                do! doParallelOrSequential nodeName (nodes |> List.skip skipLength) handleNode
+                do! doParallelOrSequential' nodeName (nodes |> List.skip skipLength) handleNode
+        }
+
+    let rec doParallelOrSequential<'a when 'a :> IGraphNodeHandle> (graph: Graph<'a>) handleNode =
+        let node, nodes = graph.Deconstructed
+        let nodeName = node.Name
+
+        async {
+            do! handleNode nodeName node
+            do! doParallelOrSequential' (Some nodeName) nodes handleNode
         }
 
 module SerDe =

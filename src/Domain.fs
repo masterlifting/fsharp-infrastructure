@@ -1,7 +1,19 @@
 ﻿module Infrastructure.Domain
 
-type ITree =
+type IName =
     abstract member Name: string
+
+type IHandle =
+    inherit IName
+    abstract member IsParallel: bool
+    abstract member Handle: (unit -> Async<Result<string, string>>) option
+
+type Graph<'a when 'a :> IName> =
+    | Graph of 'a * Graph<'a> list
+
+    member this.deconstructed =
+        match this with
+        | Graph(node, nodes) -> (node, nodes)
 
 type ITreeHandler =
     abstract member Name: string

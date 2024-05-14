@@ -56,28 +56,27 @@ module Graph =
     let findNode<'a when 'a :> IGraphNodeName> nodeName (graph: Graph<'a>) =
 
         let rec innerLoop targetName nodeName (graph: Graph<'a>) =
-            match graph with
-            | Graph(node, children) ->
-                let nodeName = nodeName |> buildNodeName <| node.Name
+            let node, children = graph.Deconstructed
 
-                if nodeName = targetName then
-                    Some node
-                else
-                    children |> List.choose (innerLoop targetName (Some nodeName)) |> List.tryHead
+            let nodeName = nodeName |> buildNodeName <| node.Name
+
+            if nodeName = targetName then
+                Some node
+            else
+                children |> List.choose (innerLoop targetName (Some nodeName)) |> List.tryHead
 
         innerLoop nodeName None graph
 
-    let findNode'<'a when 'a :> IGraphNodeName> nodeName (graphs: Graph<'a> list) =
-        graphs |> List.choose (findNode nodeName) |> List.tryHead
+    let findNode'<'a when 'a :> IGraphNodeName> nodeName (nodes: Graph<'a> list) =
+        nodes |> List.choose (findNode nodeName) |> List.tryHead
 
     let rec doParallelOrSequential'<'a when 'a :> IGraphNodeHandle> nodeName (nodes: Graph<'a> list) handleNode =
 
         let inline handle (graph: Graph<'a>) =
             async {
                 let node, nodes = graph.Deconstructed
-
                 let nodeName = nodeName |> buildNodeName <| node.Name
-                do! handleNode nodeName node
+                do! handleNode node
                 do! doParallelOrSequential' (Some nodeName) nodes handleNode
             }
 
@@ -105,12 +104,11 @@ module Graph =
         }
 
     let rec doParallelOrSequential<'a when 'a :> IGraphNodeHandle> (graph: Graph<'a>) handleNode =
-        let node, nodes = graph.Deconstructed
-        let nodeName = node.Name
+        let node, children = graph.Deconstructed
 
         async {
-            do! handleNode nodeName node
-            do! doParallelOrSequential' (Some nodeName) nodes handleNode
+            do! handleNode node
+            do! doParallelOrSequential' (Some node.Name) children handleNode
         }
 
 module SerDe =

@@ -70,7 +70,7 @@ module Graph =
     let findNode'<'a when 'a :> INodeName> nodeName (nodes: Node<'a> list) =
         nodes |> List.tryPick (findNode nodeName)
     
-    let rec handleNodes<'a when 'a :> INodeHandle> (nodes: Node<'a> list) (handleValue: 'a -> Async<unit>) =
+    let rec handleNodes<'a when 'a :> INodeHandle> (nodes: Node<'a> list) (handleNodeValue: 'a -> Async<unit>) =
         async {
              if nodes.Length > 0 then
                 let tasks, skipLength =
@@ -83,23 +83,25 @@ module Graph =
                         let sequentialNodes =
                             nodes |> List.skip 1 |> List.takeWhile (fun node -> not node.Value.IsParallel)
 
-                        let tasks = [ nodes[0] ] @ sequentialNodes |> List.map (fun node -> handleNode node handleValue) |> Async.Sequential
+                        let tasks = [ nodes[0] ] @ sequentialNodes |> List.map (fun node -> handleNode node handleNodeValue) |> Async.Sequential
                         
                         (tasks, sequentialNodes.Length + 1)
 
                     | parallelNodes ->
                         
-                        let tasks = parallelNodes |> List.map (fun node -> handleNode node handleValue) |> Async.Parallel
+                        let tasks = parallelNodes |> List.map (fun node -> handleNode node handleNodeValue) |> Async.Parallel
                         
                         (tasks, parallelNodes.Length)
 
                 do! tasks |> Async.Ignore
-                do! handleNodes (nodes |> List.skip skipLength) handleValue
+                do! handleNodes (nodes |> List.skip skipLength) handleNodeValue
         }
     and handleNode (node: Node<'a>) handleValue =
         async {
+            $"Handling node: {node.Value.Name} started" |> Logging.Log.error
             do! handleValue node.Value
             do! handleNodes node.Children handleValue
+            $"Handling node: {node.Value.Name} compleated" |> Logging.Log.error
         }
    
 module SerDe =

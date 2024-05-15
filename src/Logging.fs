@@ -1,4 +1,5 @@
 module Infrastructure.Logging
+open System.Runtime.Intrinsics.Vector128
 
 type private Provider =
     | Console
@@ -103,10 +104,9 @@ let private configLogger logLevelstr provider =
 
         logger <- Some(logLevel |> createLogger <| logToFile)
 
-    logger.Value.logInfo "Logging initialized as a Static service."
-
 let private logProcessor =
-    MailboxProcessor.Start(fun inbox ->
+    MailboxProcessor.StartImmediate(fun inbox ->
+        
         let rec innerLoop () =
             async {
                 let! logMessage = inbox.Receive()
@@ -115,10 +115,10 @@ let private logProcessor =
                 | Some logger' -> logMessage logger'
                 | None -> ()
 
-                return! innerLoop ()
+                do! innerLoop ()
             }
 
-        innerLoop ())
+        innerLoop() )
 
 let useConsoleLogger config =
     Configuration.getSection<string> config "Logging:LogLevel:Default"

@@ -1,28 +1,5 @@
 ﻿module Infrastructure.Domain
 
-type IGraphNodeName =
-    abstract member Name: string
-
-type IGraphNodeHandle =
-    inherit IGraphNodeName
-    abstract member IsParallel: bool
-    abstract member Handle: (unit -> Async<Result<string, string>>) option
-
-type Graph<'a when 'a :> IGraphNodeName> =
-    | Graph of 'a * Graph<'a> list
-
-    member this.Deconstructed =
-        match this with
-        | Graph(node, nodes) -> (node, nodes)
-
-    member this.Current =
-        match this with
-        | Graph(node, _) -> node
-
-    member this.Children =
-        match this with
-        | Graph(_, nodes) -> nodes
-
 module Errors =
     type InfrastructureError =
         | InvalidResponse of string
@@ -35,3 +12,28 @@ module Errors =
     type AppError =
         | InfrastructureError of InfrastructureError
         | LogicError of LogicError
+
+module Graph =
+
+    type INodeName =
+        abstract member Name: string
+
+    type INodeHandle =
+        inherit INodeName
+        abstract member IsParallel: bool
+        abstract member Handle: (unit -> Async<Result<string, string>>) option
+
+    type Node<'a when 'a :> INodeName> =
+        | Node of 'a * Node<'a> list
+
+        member this.Deconstructed =
+            match this with
+            | Node(current, children) -> (current, children)
+
+        member this.Value =
+            match this with
+            | Node(current, _) -> current
+
+        member this.Children =
+            match this with
+            | Node(_, children) -> children

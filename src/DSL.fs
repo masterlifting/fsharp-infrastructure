@@ -44,7 +44,7 @@ module Seq =
         | Ok items -> Ok <| List.rev items
 
 module Graph =
-    open Domain
+    open Domain.Graph
 
     let buildNodeName parentName nodeName =
         let parentName = Option.defaultValue "" parentName
@@ -53,44 +53,44 @@ module Graph =
         | "" -> nodeName
         | _ -> $"{parentName}.{nodeName}"
 
-    let findNode<'a when 'a :> IGraphNodeName> nodeName (graph: Graph<'a>) =
+    let findNode<'a when 'a :> INodeName> nodeName (node: Node<'a>) =
 
-        let rec innerLoop targetName nodeName (graph: Graph<'a>) =
-            let node, children = graph.Deconstructed
+        let rec innerLoop targetName nodeName (node: Node<'a>) =
+            let nodeValue, nodeChildren = node.Deconstructed
 
-            let nodeName = nodeName |> buildNodeName <| node.Name
+            let nodeName = nodeName |> buildNodeName <| nodeValue.Name
 
             if nodeName = targetName then
-                Some node
+                Some nodeValue
             else
-                children |> List.choose (innerLoop targetName (Some nodeName)) |> List.tryHead
+                nodeChildren |> List.tryPick (innerLoop targetName (Some nodeName))
 
-        innerLoop nodeName None graph
+        innerLoop nodeName None node
 
-    let findNode'<'a when 'a :> IGraphNodeName> nodeName (nodes: Graph<'a> list) =
-        nodes |> List.choose (findNode nodeName) |> List.tryHead
+    let findNode'<'a when 'a :> INodeName> nodeName (nodes: Node<'a> list) =
+        nodes |> List.tryPick (findNode nodeName)
 
-    let rec doParallelOrSequential'<'a when 'a :> IGraphNodeHandle> nodeName (nodes: Graph<'a> list) handleNode =
+    let rec handle'<'a when 'a :> INodeHandle> nodeName (nodes: Node<'a> list) handleNode =
 
-        let inline handle (graph: Graph<'a>) =
+        let inline handle (node: Node<'a>) =
+            let nodeName = nodeName |> buildNodeName <| node.Value.Name
+
             async {
-                let node, nodes = graph.Deconstructed
-                let nodeName = nodeName |> buildNodeName <| node.Name
-                do! handleNode node
-                do! doParallelOrSequential' (Some nodeName) nodes handleNode
+                do! handleNode node.Value
+                do! handle' (Some nodeName) node.Children handleNode
             }
 
         async {
             if nodes.Length > 0 then
                 let task, skipLength =
 
-                    let parallelNodes = nodes |> List.takeWhile (fun node -> node.Current.IsParallel)
+                    let parallelNodes = nodes |> List.takeWhile (fun node -> node.Value.IsParallel)
 
                     match parallelNodes with
                     | parallelNodes when parallelNodes.Length < 2 ->
 
                         let sequentialNodes =
-                            nodes |> List.skip 1 |> List.takeWhile (fun node -> not node.Current.IsParallel)
+                            nodes |> List.skip 1 |> List.takeWhile (fun node -> not node.Value.IsParallel)
 
                         let task = [ nodes[0] ] @ sequentialNodes |> List.map handle |> Async.Sequential
                         (task, sequentialNodes.Length + 1)
@@ -100,15 +100,13 @@ module Graph =
                         (task, parallelNodes.Length)
 
                 do! task |> Async.Ignore
-                do! doParallelOrSequential' nodeName (nodes |> List.skip skipLength) handleNode
+                do! handle' nodeName (nodes |> List.skip skipLength) handleNode
         }
 
-    let rec doParallelOrSequential<'a when 'a :> IGraphNodeHandle> (graph: Graph<'a>) handleNode =
-        let node, children = graph.Deconstructed
-
+    let rec handle<'a when 'a :> INodeHandle> (node: Node<'a>) handleNode =
         async {
-            do! handleNode node
-            do! doParallelOrSequential' (Some node.Name) children handleNode
+            do! handleNode node.Value
+            do! handle' (Some node.Value.Name) node.Children handleNode
         }
 
 module SerDe =

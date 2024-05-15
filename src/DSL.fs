@@ -69,22 +69,13 @@ module Graph =
 
     let findNode'<'a when 'a :> INodeName> nodeName (nodes: Node<'a> list) =
         nodes |> List.tryPick (findNode nodeName)
-
-    let rec handle'<'a when 'a :> INodeHandle> nodeName (nodes: Node<'a> list) handleNode =
-
-        let inline handle (node: Node<'a>) =
-            let nodeName = nodeName |> buildNodeName <| node.Value.Name
-
-            async {
-                do! handleNode node.Value
-                do! handle' (Some nodeName) node.Children handleNode
-            }
-
+    
+    let rec handleNodes<'a when 'a :> INodeHandle> (nodes: Node<'a> list) (handleValue: 'a -> Async<unit>) =
         async {
-            if nodes.Length > 0 then
-                let task, skipLength =
+             if nodes.Length > 0 then
+                let tasks, skipLength =
 
-                    let parallelNodes = nodes |> List.takeWhile (fun node -> node.Value.IsParallel)
+                    let parallelNodes = nodes |> List.takeWhile (_.Value.IsParallel)
 
                     match parallelNodes with
                     | parallelNodes when parallelNodes.Length < 2 ->
@@ -92,23 +83,25 @@ module Graph =
                         let sequentialNodes =
                             nodes |> List.skip 1 |> List.takeWhile (fun node -> not node.Value.IsParallel)
 
-                        let task = [ nodes[0] ] @ sequentialNodes |> List.map handle |> Async.Sequential
-                        (task, sequentialNodes.Length + 1)
+                        let tasks = [ nodes[0] ] @ sequentialNodes |> List.map (fun node -> handleNode node handleValue) |> Async.Sequential
+                        
+                        (tasks, sequentialNodes.Length + 1)
 
                     | parallelNodes ->
-                        let task = parallelNodes |> List.map handle |> Async.Parallel
-                        (task, parallelNodes.Length)
+                        
+                        let tasks = parallelNodes |> List.map (fun node -> handleNode node handleValue) |> Async.Parallel
+                        
+                        (tasks, parallelNodes.Length)
 
-                do! task |> Async.Ignore
-                do! handle' nodeName (nodes |> List.skip skipLength) handleNode
+                do! tasks |> Async.Ignore
+                do! handleNodes (nodes |> List.skip skipLength) handleValue
         }
-
-    let rec handle<'a when 'a :> INodeHandle> (node: Node<'a>) handleNode =
+    and handleNode (node: Node<'a>) handleValue =
         async {
-            do! handleNode node.Value
-            do! handle' (Some node.Value.Name) node.Children handleNode
+            do! handleValue node.Value
+            do! handleNodes node.Children handleValue
         }
-
+   
 module SerDe =
     module Json =
         open System.Text.Json

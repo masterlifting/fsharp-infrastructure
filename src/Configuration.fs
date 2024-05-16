@@ -9,4 +9,7 @@ let getJsonConfiguration file =
 
 let getSection<'a> (configuration: IConfigurationRoot) sectionName =
     let section = configuration.GetSection(sectionName)
-    if section.Exists() then section.Get<'a>() |> Some else None
+
+    section
+    |> Option.ofObj
+    |> Option.bind (fun section -> if section.Exists() then Some <| section.Get<'a>() else None)

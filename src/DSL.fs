@@ -98,10 +98,8 @@ module Graph =
         }
     and handleNode (node: Node<'a>) handleValue =
         async {
-            $"Handling node: {node.Value.Name} started" |> Logging.Log.error
             do! handleValue node.Value
             do! handleNodes node.Children handleValue
-            $"Handling node: {node.Value.Name} compleated" |> Logging.Log.error
         }
    
 module SerDe =

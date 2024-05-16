@@ -1,5 +1,4 @@
 module Infrastructure.Logging
-open System.Runtime.Intrinsics.Vector128
 
 type private Provider =
     | Console
@@ -10,7 +9,8 @@ type private Logger =
       logDebug: string -> unit
       logInfo: string -> unit
       logWarning: string -> unit
-      logError: string -> unit }
+      logError: string -> unit
+      logSuccess: string -> unit }
 
 type private Level =
     | Error
@@ -18,6 +18,7 @@ type private Level =
     | Information
     | Debug
     | Trace
+    | Success
 
 let mutable private logger: Logger option = None
 
@@ -29,6 +30,7 @@ let private parseLevel level =
         | "Warning" -> Warning
         | "Debug" -> Debug
         | "Trace" -> Trace
+        | "Success" -> Success
         | _ -> Information
     | None -> Information
 
@@ -38,17 +40,27 @@ let private createLogger level log =
         { logTrace = ignore
           logDebug = ignore
           logInfo = ignore
+          logSuccess = ignore
           logWarning = ignore
           logError = fun message -> log message Error }
     | Warning ->
         { logTrace = ignore
           logDebug = ignore
           logInfo = ignore
+          logSuccess = ignore
           logWarning = fun message -> log message Warning
           logError = fun message -> log message Error }
     | Information ->
         { logTrace = ignore
           logDebug = ignore
+          logSuccess = ignore
+          logInfo = fun message -> log message Information
+          logWarning = fun message -> log message Warning
+          logError = fun message -> log message Error }
+    | Success ->
+        { logTrace = ignore
+          logDebug = ignore
+          logSuccess = fun message -> log message Success
           logInfo = fun message -> log message Information
           logWarning = fun message -> log message Warning
           logError = fun message -> log message Error }
@@ -56,12 +68,14 @@ let private createLogger level log =
         { logTrace = ignore
           logDebug = fun message -> log message Debug
           logInfo = fun message -> log message Information
+          logSuccess = fun message -> log message Success
           logWarning = fun message -> log message Warning
           logError = fun message -> log message Error }
     | Trace ->
         { logTrace = fun message -> log message Trace
           logDebug = fun message -> log message Debug
           logInfo = fun message -> log message Information
+          logSuccess = fun message -> log message Success
           logWarning = fun message -> log message Warning
           logError = fun message -> log message Error }
 
@@ -79,9 +93,10 @@ let private configLogger logLevelstr provider =
             match level with
             | Error -> log <| fun timeStamp -> $"\u001b[31mError [{timeStamp}] {message}\u001b[0m"
             | Warning -> log <| fun timeStamp -> $"\u001b[33mWarning\u001b[0m [{timeStamp}] {message}"
-            | Debug -> log <| fun timeStamp -> $"\u001b[36mDebug\u001b[0m [{timeStamp}] {message}"
+            | Debug -> log <| fun timeStamp -> $"\u001b[35mDebug\u001b[0m [{timeStamp}] {message}"
             | Trace -> log <| fun timeStamp -> $"\u001b[90mTrace\u001b[0m [{timeStamp}] {message}"
-            | _ -> log <| fun timeStamp -> $"\u001b[32mInfo\u001b[0m [{timeStamp}] {message}"
+            | Success -> log <| fun timeStamp -> $"\u001b[32mSuccess [{timeStamp}] {message}\u001b[0m"
+            | _ -> log <| fun timeStamp -> $"\u001b[36mInfo\u001b[0m [{timeStamp}] {message}"
 
         logger <- Some(logLevel |> createLogger <| logToConsole)
 
@@ -100,13 +115,14 @@ let private configLogger logLevelstr provider =
             | Warning -> log <| fun timeStamp -> $"Warning [{timeStamp}] {message}"
             | Debug -> log <| fun timeStamp -> $"Debug [{timeStamp}] {message}"
             | Trace -> log <| fun timeStamp -> $"Trace [{timeStamp}] {message}"
+            | Success -> log <| fun timeStamp -> $"Success [{timeStamp}] {message}"
             | _ -> log <| fun timeStamp -> $"Info [{timeStamp}] {message}"
 
         logger <- Some(logLevel |> createLogger <| logToFile)
 
 let private logProcessor =
     MailboxProcessor.StartImmediate(fun inbox ->
-        
+
         let rec innerLoop () =
             async {
                 let! logMessage = inbox.Receive()
@@ -118,7 +134,7 @@ let private logProcessor =
                 do! innerLoop ()
             }
 
-        innerLoop() )
+        innerLoop ())
 
 let useConsoleLogger config =
     Configuration.getSection<string> config "Logging:LogLevel:Default"
@@ -145,3 +161,6 @@ module Log =
 
     let error m =
         logProcessor.Post <| fun logger' -> logger'.logError m
+
+    let success m =
+        logProcessor.Post <| fun logger' -> logger'.logSuccess m

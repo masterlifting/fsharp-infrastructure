@@ -73,13 +73,13 @@ module Graph =
             if nodes.Length > 0 then
                 let tasks, skipLength =
 
-                    let parallelNodes = nodes |> List.takeWhile (_.Value.IsParallel)
+                    let parallelNodes = nodes |> List.takeWhile (_.Value.Parallel)
 
                     match parallelNodes with
                     | parallelNodes when parallelNodes.Length < 2 ->
 
                         let sequentialNodes =
-                            nodes |> List.skip 1 |> List.takeWhile (fun node -> not node.Value.IsParallel)
+                            nodes |> List.skip 1 |> List.takeWhile (fun node -> not node.Value.Parallel)
 
                         let tasks =
                             [ nodes[0] ] @ sequentialNodes

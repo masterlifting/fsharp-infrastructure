@@ -20,7 +20,8 @@ module Graph =
 
     type INodeHandle =
         inherit INodeName
-        abstract member IsParallel: bool
+        abstract member Parallel: bool
+        abstract member Recurcive: bool
         abstract member Handle: (unit -> Async<Result<string, string>>) option
 
     type Node<'a when 'a :> INodeName> =

@@ -102,10 +102,21 @@ module Graph =
         }
 
     and handleNode (node: Node<'a>) handleValue =
-        async {
-            handleValue node.Value |> Async.Start
-            do! handleNodes node.Children handleValue
-        }
+        let handle nodeValue nodeChildren =
+            async {
+                do! handleValue nodeValue
+                do! handleNodes nodeChildren handleValue
+            }
+
+        let nodeValue, nodeChildren = node.Deconstructed
+
+        if nodeValue.Recurcive then
+            handle nodeValue nodeChildren |> Async.Start
+            handleNode node handleValue
+
+        else
+            handle nodeValue nodeChildren
+
 
 module SerDe =
     module Json =

@@ -45,6 +45,7 @@ module Seq =
 
 module Graph =
     open Domain.Graph
+    open System.Threading
 
     let buildNodeName parentName nodeName =
         match parentName with
@@ -68,7 +69,11 @@ module Graph =
     let findNode'<'a when 'a :> INodeName> nodeName (nodes: Node<'a> list) =
         nodes |> List.tryPick (findNode nodeName)
 
-    let rec handleNodes<'a when 'a :> INodeHandle> (nodes: Node<'a> list) (handleNodeValue: 'a -> Async<unit>) =
+    let rec handleNodes<'a when 'a :> INodeHandle>
+        (nodes: Node<'a> list)
+        (handleNodeValue: 'a -> CancellationToken list -> Async<CancellationToken list>)
+        (cTokens: CancellationToken list)
+        =
         async {
             if nodes.Length > 0 then
                 let tasks, skipLength =
@@ -83,7 +88,7 @@ module Graph =
 
                         let tasks =
                             [ nodes[0] ] @ sequentialNodes
-                            |> List.map (fun node -> handleNode node handleNodeValue)
+                            |> List.map (fun node -> handleNode node handleNodeValue cTokens)
                             |> Async.Sequential
 
                         (tasks, sequentialNodes.Length + 1)
@@ -92,24 +97,32 @@ module Graph =
 
                         let tasks =
                             parallelNodes
-                            |> List.map (fun node -> handleNode node handleNodeValue)
+                            |> List.map (fun node -> handleNode node handleNodeValue cTokens)
                             |> Async.Parallel
 
                         (tasks, parallelNodes.Length)
 
                 do! tasks |> Async.Ignore
-                do! handleNodes (nodes |> List.skip skipLength) handleNodeValue
+                do! handleNodes (nodes |> List.skip skipLength) handleNodeValue cTokens
         }
 
-    and handleNode (node: Node<'a>) handleValue =
+    and handleNode (node: Node<'a>) handleValue cTokens =
         let nodeValue, nodeChildren = node.Deconstructed
 
         async {
-            handleNodes nodeChildren handleValue |> Async.Start
-            do! handleValue nodeValue
+            match
+                cTokens
+                |> List.tryPick (fun t -> if t.IsCancellationRequested then Some t else None)
+            with
+            | Some requestedToken ->
+                let! _ = handleValue nodeValue [ requestedToken ]
+                do! handleNodes [] handleValue [ requestedToken ]
+            | None ->
+                let! cTokens = handleValue nodeValue cTokens
+                handleNodes nodeChildren handleValue cTokens |> Async.Start
 
-            if node.Value.Recurcive then
-                do! handleNode node handleValue
+                if node.Value.Recurcive then
+                    do! handleNode node handleValue cTokens
         }
 
 

@@ -5,16 +5,32 @@ module Errors =
         | InvalidResponse of string
         | InvalidRequest of string
 
-    type LogicError =
+        override this.ToString() =
+            match this with
+            | InvalidResponse error -> error
+            | InvalidRequest error -> error
+
+    type LogicalError =
         | NotSupported
         | NotImplemented
 
+        override this.ToString() =
+            match this with
+            | NotSupported -> "Not supported"
+            | NotImplemented -> "Not implemented"
+
     type AppError =
-        | InfrastructureError of InfrastructureError
-        | LogicError of LogicError
+        | Infrastructure of InfrastructureError
+        | Logical of LogicalError
+
+        override this.ToString() =
+            match this with
+            | Infrastructure error -> error.ToString()
+            | Logical error -> error.ToString()
 
 module Graph =
     open System.Threading
+    open Errors
 
     type INodeName =
         abstract member Name: string
@@ -23,7 +39,7 @@ module Graph =
         inherit INodeName
         abstract member Parallel: bool
         abstract member Recurcive: bool
-        abstract member Handle: (CancellationTokenSource -> Async<Result<string, string>>) option
+        abstract member Handle: (CancellationTokenSource -> Async<Result<string, AppError>>) option
 
     type Node<'a when 'a :> INodeName> =
         | Node of 'a * Node<'a> list

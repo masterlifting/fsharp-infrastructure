@@ -102,26 +102,22 @@ module Graph =
 
                         (tasks, parallelNodes.Length)
 
-                do! tasks |> Async.Ignore
+                tasks |> Async.Ignore |> Async.Start
                 do! handleNodes (nodes |> List.skip skipLength) handleNodeValue cTokens
         }
 
     and handleNode (node: Node<'a>) handleValue cTokens =
-        let nodeValue, nodeChildren = node.Deconstructed
-
         async {
-            let! tokens = handleValue nodeValue cTokens
+            let nodeValue, nodeChildren = node.Deconstructed
 
-            match
-                tokens
-                |> List.tryPick (fun t -> if t.IsCancellationRequested then Some t else None)
-            with
-            | Some expiredToken -> do! handleNodes nodeChildren handleValue [ expiredToken ]
-            | None ->
-                do! handleNodes nodeChildren handleValue tokens
+            let! handledTokens = handleValue nodeValue cTokens
+            do! handleNodes nodeChildren handleValue handledTokens
 
-                if node.Value.Recurcive then
-                    do! handleNode node handleValue tokens
+            if
+                nodeValue.Recurcive
+                && handledTokens |> List.exists (fun token -> token.IsCancellationRequested) |> not
+            then
+                do! handleNode node handleValue handledTokens
         }
 
 

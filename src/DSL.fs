@@ -91,7 +91,7 @@ module Graph =
 
                         let tasks =
                             [ nodes[0] ] @ sequentialNodes
-                            |> List.map (fun node -> handleNode node handleNodeValue cTokens)
+                            |> List.map (fun node -> handleNode node handleNodeValue cTokens 0u)
                             |> Async.Sequential
 
                         (tasks, sequentialNodes.Length + 1)
@@ -100,7 +100,7 @@ module Graph =
 
                         let tasks =
                             parallelNodes
-                            |> List.map (fun node -> handleNode node handleNodeValue cTokens)
+                            |> List.map (fun node -> handleNode node handleNodeValue cTokens 0u)
                             |> Async.Parallel
 
                         (tasks, parallelNodes.Length)
@@ -109,13 +109,33 @@ module Graph =
                 do! handleNodes (nodes |> List.skip skipLength) handleNodeValue cTokens
         }
 
-    and handleNode node handleValue cTokens =
+    and handleNode node handleValue cTokens (times: uint) =
         async {
-            let! parentTokens = handleValue node.Value cTokens
-            do! handleNodes node.Children handleValue parentTokens
+            match node.Value.Delay with
+            | None -> ()
+            | Some delay -> do! Async.Sleep delay
 
-            if node.Value.Recurcive && not <| canceled parentTokens then
-                do! handleNode node handleValue parentTokens
+            let cTokens =
+                match node.Value.Duration with
+                | None -> cTokens
+                | Some duration ->
+                    use cts = new CancellationTokenSource()
+                    cts.CancelAfter duration
+                    cts.Token :: cTokens
+
+            let cTokens =
+                match node.Value.Times with
+                | Some times when times = uint 0 ->
+                    use cts = new CancellationTokenSource()
+                    cts.Cancel()
+                    cts.Token :: cTokens
+                | _ -> cTokens
+
+            let! cTokens = handleValue node.Value cTokens
+            do! handleNodes node.Children handleValue cTokens
+
+            if node.Value.Recursively && not <| canceled cTokens then
+                do! handleNode node handleValue cTokens (times - uint 1)
         }
 
 module SerDe =

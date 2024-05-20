@@ -1,11 +1,13 @@
 ﻿module Infrastructure.Domain
 
+open System
+
 module Errors =
     type InfrastructureError =
         | InvalidResponse of string
         | InvalidRequest of string
 
-        override this.ToString() =
+        member this.message =
             match this with
             | InvalidResponse error -> error
             | InvalidRequest error -> error
@@ -14,7 +16,7 @@ module Errors =
         | NotSupported
         | NotImplemented
 
-        override this.ToString() =
+        member this.message =
             match this with
             | NotSupported -> "Not supported"
             | NotImplemented -> "Not implemented"
@@ -22,8 +24,8 @@ module Errors =
     type AppError =
         | Infrastructure of InfrastructureError
         | Logical of LogicalError
-
-        override this.ToString() =
+        
+        member this.message =
             match this with
             | Infrastructure error -> error.ToString()
             | Logical error -> error.ToString()
@@ -38,7 +40,10 @@ module Graph =
     type INodeHandle =
         inherit INodeName
         abstract member Parallel: bool
-        abstract member Recurcive: bool
+        abstract member Recursively: bool
+        abstract member Duration: TimeSpan option
+        abstract member Delay: TimeSpan option
+        abstract member Times: uint option
         abstract member Handle: (CancellationTokenSource -> Async<Result<string, AppError>>) option
 
     type Node<'a when 'a :> INodeName> =

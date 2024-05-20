@@ -40,43 +40,43 @@ let private createLogger level log =
         { logTrace = ignore
           logDebug = ignore
           logInfo = ignore
-          logSuccess = ignore
           logWarning = ignore
+          logSuccess = ignore
+          logError = fun message -> log message Error }
+    | Success ->
+        { logTrace = ignore
+          logDebug = ignore
+          logWarning = ignore
+          logInfo = ignore
+          logSuccess = fun message -> log message Success
           logError = fun message -> log message Error }
     | Warning ->
         { logTrace = ignore
           logDebug = ignore
           logInfo = ignore
-          logSuccess = ignore
           logWarning = fun message -> log message Warning
+          logSuccess = fun message -> log message Success
           logError = fun message -> log message Error }
     | Information ->
         { logTrace = ignore
           logDebug = ignore
-          logSuccess = ignore
           logInfo = fun message -> log message Information
           logWarning = fun message -> log message Warning
-          logError = fun message -> log message Error }
-    | Success ->
-        { logTrace = ignore
-          logDebug = ignore
           logSuccess = fun message -> log message Success
-          logInfo = fun message -> log message Information
-          logWarning = fun message -> log message Warning
           logError = fun message -> log message Error }
     | Debug ->
         { logTrace = ignore
           logDebug = fun message -> log message Debug
           logInfo = fun message -> log message Information
-          logSuccess = fun message -> log message Success
           logWarning = fun message -> log message Warning
+          logSuccess = fun message -> log message Success
           logError = fun message -> log message Error }
     | Trace ->
         { logTrace = fun message -> log message Trace
           logDebug = fun message -> log message Debug
           logInfo = fun message -> log message Information
-          logSuccess = fun message -> log message Success
           logWarning = fun message -> log message Warning
+          logSuccess = fun message -> log message Success
           logError = fun message -> log message Error }
 
 let private configLogger logLevelstr provider =

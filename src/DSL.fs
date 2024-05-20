@@ -47,6 +47,9 @@ module Graph =
     open Domain.Graph
     open System.Threading
 
+    let canceled (cTokens: CancellationToken list) =
+        cTokens |> List.exists (fun token -> token.IsCancellationRequested)
+
     let buildNodeName parentName nodeName =
         match parentName with
         | None -> nodeName
@@ -106,20 +109,14 @@ module Graph =
                 do! handleNodes (nodes |> List.skip skipLength) handleNodeValue cTokens
         }
 
-    and handleNode (node: Node<'a>) handleValue cTokens =
+    and handleNode node handleValue cTokens =
         async {
-            let nodeValue, nodeChildren = node.Deconstructed
+            let! parentTokens = handleValue node.Value cTokens
+            do! handleNodes node.Children handleValue parentTokens
 
-            let! handledTokens = handleValue nodeValue cTokens
-            do! handleNodes nodeChildren handleValue handledTokens
-
-            if
-                nodeValue.Recurcive
-                && handledTokens |> List.exists (fun token -> token.IsCancellationRequested) |> not
-            then
-                do! handleNode node handleValue handledTokens
+            if node.Value.Recurcive && not <| canceled parentTokens then
+                do! handleNode node handleValue parentTokens
         }
-
 
 module SerDe =
     module Json =

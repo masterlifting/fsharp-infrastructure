@@ -14,6 +14,7 @@ module Errors =
         | LogicError of LogicError
 
 module Graph =
+    open System.Threading
 
     type INodeName =
         abstract member Name: string
@@ -22,7 +23,7 @@ module Graph =
         inherit INodeName
         abstract member Parallel: bool
         abstract member Recurcive: bool
-        abstract member Handle: (unit -> Async<Result<string, string>>) option
+        abstract member Handle: (CancellationTokenSource -> Async<Result<string, string>>) option
 
     type Node<'a when 'a :> INodeName> =
         | Node of 'a * Node<'a> list

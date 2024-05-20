@@ -110,19 +110,18 @@ module Graph =
         let nodeValue, nodeChildren = node.Deconstructed
 
         async {
+            let! tokens = handleValue nodeValue cTokens
+
             match
-                cTokens
+                tokens
                 |> List.tryPick (fun t -> if t.IsCancellationRequested then Some t else None)
             with
-            | Some requestedToken ->
-                let! _ = handleValue nodeValue [ requestedToken ]
-                do! handleNodes [] handleValue [ requestedToken ]
+            | Some expiredToken -> do! handleNodes nodeChildren handleValue [ expiredToken ]
             | None ->
-                let! cTokens = handleValue nodeValue cTokens
-                handleNodes nodeChildren handleValue cTokens |> Async.Start
+                do! handleNodes nodeChildren handleValue tokens
 
                 if node.Value.Recurcive then
-                    do! handleNode node handleValue cTokens
+                    do! handleNode node handleValue tokens
         }
 
 

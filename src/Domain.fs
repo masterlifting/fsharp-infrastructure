@@ -43,8 +43,8 @@ module Graph =
         abstract member Recursively: bool
         abstract member Duration: TimeSpan option
         abstract member Delay: TimeSpan option
-        abstract member Times: uint option
-        abstract member Handle: (CancellationTokenSource -> Async<Result<string, AppError>>) option
+        abstract member Limit: uint option
+        abstract member Handle: (CancellationToken -> Async<Result<string, AppError>>) option
 
     type Node<'a when 'a :> INodeName> =
         | Node of 'a * Node<'a> list

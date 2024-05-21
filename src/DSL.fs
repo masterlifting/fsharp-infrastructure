@@ -47,8 +47,10 @@ module Graph =
     open Domain.Graph
     open System.Threading
 
-    let canceled (cTokens: CancellationToken list) =
-        cTokens |> List.exists (fun token -> token.IsCancellationRequested)
+    let canceled (cToken: CancellationToken) =
+        cToken.IsCancellationRequested
+    let notCanceled (cToken: CancellationToken) =
+        not <| cToken.IsCancellationRequested
 
     let buildNodeName parentName nodeName =
         match parentName with
@@ -74,8 +76,8 @@ module Graph =
 
     let rec handleNodes<'a when 'a :> INodeHandle>
         (nodes: Node<'a> list)
-        (handleNodeValue: 'a -> CancellationToken list -> Async<CancellationToken list>)
-        (cTokens: CancellationToken list)
+        (handleNodeValue: 'a -> CancellationToken -> Async<CancellationToken>)
+        (cToken: CancellationToken)
         =
         async {
             if nodes.Length > 0 then
@@ -91,7 +93,7 @@ module Graph =
 
                         let tasks =
                             [ nodes[0] ] @ sequentialNodes
-                            |> List.map (fun node -> handleNode node handleNodeValue cTokens 0u)
+                            |> List.map (fun node -> handleNode node handleNodeValue cToken 1u)
                             |> Async.Sequential
 
                         (tasks, sequentialNodes.Length + 1)
@@ -100,42 +102,49 @@ module Graph =
 
                         let tasks =
                             parallelNodes
-                            |> List.map (fun node -> handleNode node handleNodeValue cTokens 0u)
+                            |> List.map (fun node -> handleNode node handleNodeValue cToken 1u)
                             |> Async.Parallel
 
                         (tasks, parallelNodes.Length)
 
-                tasks |> Async.Ignore |> Async.Start
-                do! handleNodes (nodes |> List.skip skipLength) handleNodeValue cTokens
+                do! tasks |> Async.Ignore
+                do! handleNodes (nodes |> List.skip skipLength) handleNodeValue cToken
         }
 
-    and handleNode node handleValue cTokens (times: uint) =
+    and handleNode node handleValue cToken limit =
         async {
-            match node.Value.Delay with
-            | None -> ()
-            | Some delay -> do! Async.Sleep delay
+            if cToken |> notCanceled  then
+                match node.Value.Delay with
+                | None -> ()
+                | Some delay -> do! Async.Sleep delay
 
-            let cTokens =
-                match node.Value.Duration with
-                | None -> cTokens
-                | Some duration ->
-                    use cts = new CancellationTokenSource()
-                    cts.CancelAfter duration
-                    cts.Token :: cTokens
+            let cToken =
+                if cToken |> notCanceled then
+                    match node.Value.Duration with
+                    | None -> cToken
+                    | Some duration ->
+                        let cts = new CancellationTokenSource()
+                        cts.CancelAfter duration
+                        let linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cToken, cts.Token)
+                        linkedCts.Token
+                else
+                    cToken
 
-            let cTokens =
-                match node.Value.Times with
-                | Some times when times = uint 0 ->
-                    use cts = new CancellationTokenSource()
-                    cts.Cancel()
-                    cts.Token :: cTokens
-                | _ -> cTokens
+            let! cToken = handleValue node.Value cToken
+            
+            if cToken |> notCanceled then
+                do! handleNodes node.Children handleValue cToken
 
-            let! cTokens = handleValue node.Value cTokens
-            do! handleNodes node.Children handleValue cTokens
+            if node.Value.Recursively && cToken |> notCanceled then
+                let cToken =
+                    match node.Value.Limit with
+                    | Some nodeLimit when nodeLimit = limit ->
+                        use cts = new CancellationTokenSource()
+                        cts.Cancel()
+                        cts.Token
+                    | _ -> cToken
 
-            if node.Value.Recursively && not <| canceled cTokens then
-                do! handleNode node handleValue cTokens (times - uint 1)
+                do! handleNode node handleValue cToken (limit + uint 1)
         }
 
 module SerDe =

@@ -28,8 +28,12 @@ module AP =
         | true -> Some input
         | _ -> None
 
-module Seq =
+module Threading =
+    open System.Threading
+    let canceled (cToken: CancellationToken) = cToken.IsCancellationRequested
+    let notCanceled (cToken: CancellationToken) = not <| cToken.IsCancellationRequested
 
+module Seq =
     let resultOrError collection =
         let checkItemResult state itemResult =
             match state with
@@ -45,12 +49,7 @@ module Seq =
 
 module Graph =
     open Domain.Graph
-    open System.Threading
-
-    let canceled (cToken: CancellationToken) =
-        cToken.IsCancellationRequested
-    let notCanceled (cToken: CancellationToken) =
-        not <| cToken.IsCancellationRequested
+    open Threading
 
     let buildNodeName parentName nodeName =
         match parentName with
@@ -76,7 +75,7 @@ module Graph =
 
     let rec handleNodes<'a when 'a :> INodeHandle>
         (nodes: Node<'a> list)
-        (handleNodeValue: 'a -> CancellationToken -> Async<CancellationToken>)
+        (handleNodeValue: 'a -> CancellationToken -> uint -> Async<CancellationToken>)
         (cToken: CancellationToken)
         =
         async {
@@ -93,7 +92,7 @@ module Graph =
 
                         let tasks =
                             [ nodes[0] ] @ sequentialNodes
-                            |> List.map (fun node -> handleNode node handleNodeValue cToken 1u)
+                            |> List.map (fun node -> handleNode node handleNodeValue cToken 0u)
                             |> Async.Sequential
 
                         (tasks, sequentialNodes.Length + 1)
@@ -102,7 +101,7 @@ module Graph =
 
                         let tasks =
                             parallelNodes
-                            |> List.map (fun node -> handleNode node handleNodeValue cToken 1u)
+                            |> List.map (fun node -> handleNode node handleNodeValue cToken 0u)
                             |> Async.Parallel
 
                         (tasks, parallelNodes.Length)
@@ -111,40 +110,15 @@ module Graph =
                 do! handleNodes (nodes |> List.skip skipLength) handleNodeValue cToken
         }
 
-    and handleNode node handleValue cToken limit =
+    and handleNode node handleValue cToken count=
         async {
-            if cToken |> notCanceled  then
-                match node.Value.Delay with
-                | None -> ()
-                | Some delay -> do! Async.Sleep delay
+            let count = count + uint 1
 
-            let cToken =
-                if cToken |> notCanceled then
-                    match node.Value.Duration with
-                    | None -> cToken
-                    | Some duration ->
-                        let cts = new CancellationTokenSource()
-                        cts.CancelAfter duration
-                        let linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cToken, cts.Token)
-                        linkedCts.Token
-                else
-                    cToken
-
-            let! cToken = handleValue node.Value cToken
-            
-            if cToken |> notCanceled then
-                do! handleNodes node.Children handleValue cToken
+            let! cToken = handleValue node.Value cToken count
+            do! handleNodes node.Children handleValue cToken
 
             if node.Value.Recursively && cToken |> notCanceled then
-                let cToken =
-                    match node.Value.Limit with
-                    | Some nodeLimit when nodeLimit = limit ->
-                        use cts = new CancellationTokenSource()
-                        cts.Cancel()
-                        cts.Token
-                    | _ -> cToken
-
-                do! handleNode node handleValue cToken (limit + uint 1)
+                do! handleNode node handleValue cToken count
         }
 
 module SerDe =

@@ -136,12 +136,12 @@ let private logProcessor =
 
         innerLoop ())
 
-let useConsoleLogger config =
+let useConsole config =
     Configuration.getSection<string> config "Logging:LogLevel:Default"
     |> configLogger
     <| Console
 
-let useFileLogger config =
+let useFile config =
     Configuration.getSection<string> config "Logging:LogLevel:Default"
     |> configLogger
     <| File

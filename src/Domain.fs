@@ -13,11 +13,13 @@ module Errors =
     type LogicalError =
         | NotSupported
         | NotImplemented
+        | Cancelled of string
 
         member this.Message =
             match this with
             | NotSupported -> "Not supported"
             | NotImplemented -> "Not implemented"
+            | Cancelled task -> $"Task '{task}' was cancelled"
 
     type AppError =
         | Infrastructure of InfrastructureError

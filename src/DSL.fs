@@ -73,7 +73,7 @@ module Graph =
     let findNode'<'a when 'a :> INodeName> nodeName (nodes: Node<'a> list) =
         nodes |> List.tryPick (findNode nodeName)
 
-    let rec handleNodes<'a when 'a :> INodeHandle>
+    let rec handleNodes<'a when 'a :> INodeHandle<'a>>
         (nodes: Node<'a> list)
         (handleNodeValue: 'a -> CancellationToken -> uint -> Async<CancellationToken>)
         (cToken: CancellationToken)
@@ -110,9 +110,19 @@ module Graph =
                 do! handleNodes (nodes |> List.skip skipLength) handleNodeValue cToken
         }
 
-    and handleNode node handleValue cToken count=
+    and handleNode node handleValue cToken count =
         async {
             let count = count + uint 1
+
+            let! node =
+                match node.Value.Refresh with
+                | Some refresh ->
+                    async {
+                        match! refresh node.Value.Name with
+                        | Some refreshedNode -> return refreshedNode
+                        | None -> return node
+                    }
+                | None -> async { return node }
 
             let! cToken = handleValue node.Value cToken count
             do! handleNodes node.Children handleValue cToken

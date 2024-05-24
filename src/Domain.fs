@@ -4,11 +4,13 @@ module Errors =
     type InfrastructureError =
         | InvalidResponse of string
         | InvalidRequest of string
+        | PersistenceError of string
 
         member this.Message =
             match this with
             | InvalidResponse error -> error
             | InvalidRequest error -> error
+            | PersistenceError error -> error
 
     type LogicalError =
         | NotSupported
@@ -38,13 +40,6 @@ module Graph =
     type INodeName =
         abstract member Name: string
 
-    type INodeHandle =
-        inherit INodeName
-        abstract member Parallel: bool
-        abstract member Recursively: bool
-        abstract member Duration: TimeSpan option
-        abstract member Handle: (CancellationToken -> Async<Result<string, AppError>>) option
-
     type Node<'a when 'a :> INodeName> =
         | Node of 'a * Node<'a> list
 
@@ -59,3 +54,15 @@ module Graph =
         member this.Children =
             match this with
             | Node(_, children) -> children
+
+    type NodeHandle = (CancellationToken -> Async<Result<string, AppError>>) option
+
+    type NodeRefresh<'a when 'a :> INodeName> = (string -> Async<Node<'a> option>) option
+
+    type INodeHandle<'a when 'a :> INodeName> =
+        inherit INodeName
+        abstract member Parallel: bool
+        abstract member Recursively: bool
+        abstract member Duration: TimeSpan option
+        abstract member Handle: NodeHandle
+        abstract member Refresh: NodeRefresh<'a>

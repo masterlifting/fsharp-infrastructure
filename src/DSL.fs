@@ -49,7 +49,6 @@ module Seq =
 
 module Graph =
     open Domain.Graph
-    open Threading
 
     let buildNodeName parentName nodeName =
         match parentName with
@@ -69,67 +68,6 @@ module Graph =
                 nodeChildren |> List.tryPick (innerLoop targetName (Some nodeName))
 
         innerLoop nodeName None node
-
-    let findNode'<'a when 'a :> INodeName> nodeName (nodes: Node<'a> list) =
-        nodes |> List.tryPick (findNode nodeName)
-
-    let rec handleNodes<'a when 'a :> INodeHandle<'a>>
-        (nodes: Node<'a> list)
-        (handleNodeValue: 'a -> CancellationToken -> uint -> Async<CancellationToken>)
-        (cToken: CancellationToken)
-        =
-        async {
-            if nodes.Length > 0 then
-                let tasks, skipLength =
-
-                    let parallelNodes = nodes |> List.takeWhile (_.Value.Parallel)
-
-                    match parallelNodes with
-                    | parallelNodes when parallelNodes.Length < 2 ->
-
-                        let sequentialNodes =
-                            nodes |> List.skip 1 |> List.takeWhile (fun node -> not node.Value.Parallel)
-
-                        let tasks =
-                            [ nodes[0] ] @ sequentialNodes
-                            |> List.map (fun node -> handleNode node handleNodeValue cToken 0u)
-                            |> Async.Sequential
-
-                        (tasks, sequentialNodes.Length + 1)
-
-                    | parallelNodes ->
-
-                        let tasks =
-                            parallelNodes
-                            |> List.map (fun node -> handleNode node handleNodeValue cToken 0u)
-                            |> Async.Parallel
-
-                        (tasks, parallelNodes.Length)
-
-                do! tasks |> Async.Ignore
-                do! handleNodes (nodes |> List.skip skipLength) handleNodeValue cToken
-        }
-
-    and handleNode node handleValue cToken count =
-        async {
-            let count = count + uint 1
-
-            let! node =
-                match node.Value.Refresh with
-                | Some refresh ->
-                    async {
-                        match! refresh node.Value.Name with
-                        | Some refreshedNode -> return refreshedNode
-                        | None -> return node
-                    }
-                | None -> async { return node }
-
-            let! cToken = handleValue node.Value cToken count
-            do! handleNodes node.Children handleValue cToken
-
-            if node.Value.Recursively && cToken |> notCanceled then
-                do! handleNode node handleValue cToken count
-        }
 
 module SerDe =
     module Json =

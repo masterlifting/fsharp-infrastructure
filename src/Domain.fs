@@ -33,9 +33,6 @@ module Errors =
             | Logical error -> error.Message
 
 module Graph =
-    open System.Threading
-    open Errors
-    open System
 
     type INodeName =
         abstract member Name: string
@@ -54,15 +51,3 @@ module Graph =
         member this.Children =
             match this with
             | Node(_, children) -> children
-
-    type NodeHandle = (CancellationToken -> Async<Result<string, AppError>>) option
-
-    type NodeRefresh<'a when 'a :> INodeName> = (string -> Async<Node<'a> option>) option
-
-    type INodeHandle<'a when 'a :> INodeName> =
-        inherit INodeName
-        abstract member Parallel: bool
-        abstract member Recursively: bool
-        abstract member Duration: TimeSpan option
-        abstract member Handle: NodeHandle
-        abstract member Refresh: NodeRefresh<'a>

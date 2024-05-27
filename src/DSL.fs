@@ -63,7 +63,7 @@ module Graph =
             let nodeName = nodeName |> buildNodeName <| nodeValue.Name
 
             if nodeName = targetName then
-                Some nodeValue
+                Some node
             else
                 nodeChildren |> List.tryPick (innerLoop targetName (Some nodeName))
 

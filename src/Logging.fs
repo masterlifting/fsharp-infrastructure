@@ -95,7 +95,7 @@ let private configLogger logLevelstr provider =
             | Warning -> log <| fun timeStamp -> $"\u001b[33mWarning\u001b[0m [{timeStamp}] {message}"
             | Debug -> log <| fun timeStamp -> $"\u001b[35mDebug\u001b[0m [{timeStamp}] {message}"
             | Trace -> log <| fun timeStamp -> $"\u001b[90mTrace\u001b[0m [{timeStamp}] {message}"
-            | Success -> log <| fun timeStamp -> $"\u001b[32mSuccess [{timeStamp}] {message}\u001b[0m"
+            | Success -> log <| fun timeStamp -> $"\u001b[32mSuccess\u001b[0m [{timeStamp}] {message}"
             | _ -> log <| fun timeStamp -> $"\u001b[36mInfo\u001b[0m [{timeStamp}] {message}"
 
         logger <- Some(logLevel |> createLogger <| logToConsole)

@@ -32,8 +32,8 @@ module private Yaml =
 
             let buildNodeName parentName nodeName =
                 match parentName with
-                | None -> nodeName
-                | Some parentName -> $"{parentName}:{nodeName}"
+                | "" -> nodeName
+                | _ -> $"{parentName}:{nodeName}"
 
             let rec innerLoop nodeName (data: Object) =
                 match data with
@@ -41,22 +41,16 @@ module private Yaml =
                     dict
                     |> Seq.iter (fun node ->
                         let nodeName = nodeName |> buildNodeName <| node.Key.ToString()
-                        innerLoop (Some nodeName) node.Value)
+                        innerLoop nodeName node.Value)
 
                 | :? List<Object> as list ->
                     list
                     |> Seq.iteri (fun index element ->
                         let nodeName = nodeName |> buildNodeName <| index.ToString()
-                        innerLoop (Some nodeName) element)
-                | _ ->
-                    let nodeName =
-                        match nodeName with
-                        | Some prefix -> prefix
-                        | None -> ""
+                        innerLoop nodeName element)
+                | _ -> result.Add(nodeName, data.ToString())
 
-                    result.Add(nodeName, data.ToString())
-
-            innerLoop None data
+            innerLoop "" data
             result
 
         override this.Load(stream: Stream) =
@@ -107,8 +101,8 @@ let private getJsonConfiguration fileName =
 let private getYamlConfiguration fileName =
     let file = $"{fileName}.yaml"
     let builder = ConfigurationBuilder()
-    (AddYamlFile builder file).Build()
-
+    let builder = builder |> AddYamlFile <| file
+    builder.Build()
 
 let get fileType =
     match fileType with

@@ -4,7 +4,7 @@ open System
 
 module AP =
     let (|IsString|_|) (input: string) =
-        match not <| String.IsNullOrWhiteSpace input with
+        match String.IsNullOrWhiteSpace input with
         | false -> Some input
         | _ -> None
 
@@ -34,18 +34,12 @@ module Threading =
     let notCanceled (cToken: CancellationToken) = not <| cToken.IsCancellationRequested
 
 module Seq =
-    let resultOrError collection =
-        let checkItemResult state itemResult =
-            match state with
-            | Error error -> Error error
-            | Ok items ->
-                match itemResult with
-                | Error error -> Error error
-                | Ok item -> Ok <| item :: items
+    let resultOrError data =
+        let map state itemRes =
+            state
+            |> Result.bind (fun items -> itemRes |> Result.map (fun item -> item :: items))
 
-        match Seq.fold checkItemResult (Ok []) collection with
-        | Error error -> Error error
-        | Ok items -> Ok <| List.rev items
+        Seq.fold map (Ok []) data |> Result.map List.rev
 
 module Graph =
     open Domain.Graph
@@ -62,10 +56,9 @@ module Graph =
 
             let nodeName = nodeName |> buildNodeName <| nodeValue.Name
 
-            if nodeName = targetName then
-                Some node
-            else
-                nodeChildren |> List.tryPick (innerLoop targetName (Some nodeName))
+            match nodeName = targetName with
+            | true -> Some node
+            | _ -> nodeChildren |> List.tryPick (innerLoop targetName (Some nodeName))
 
         innerLoop nodeName None node
 

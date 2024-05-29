@@ -68,7 +68,7 @@ module Graph =
                 nodeChildren |> List.tryPick (innerLoop targetName (Some nodeName))
 
         innerLoop nodeName None node
-        
+
 module SerDe =
     module Json =
         open System.Text.Json
@@ -88,18 +88,18 @@ module SerDe =
     module Yaml =
         open YamlDotNet.Serialization
 
-        let Serializer = SerializerBuilder().Build()
-        let Deserializer = DeserializerBuilder().Build()
+        let private serializer = SerializerBuilder().Build()
+        let private deserializer = DeserializerBuilder().Build()
 
         let serialize data =
             try
-                Ok <| Serializer.Serialize data
+                Ok <| serializer.Serialize data
             with ex ->
                 Error ex.Message
 
         let deserialize<'a> (data: string) =
             try
-                Ok <| Deserializer.Deserialize<'a> data
+                Ok <| deserializer.Deserialize<'a> data
             with ex ->
                 Error ex.Message
 

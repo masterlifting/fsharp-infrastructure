@@ -2,7 +2,7 @@ module Infrastructure.DSL
 
 open System
 
-module AP =
+module ActivePatterns =
     let (|IsString|_|) (input: string) =
         match String.IsNullOrWhiteSpace input with
         | false -> Some input

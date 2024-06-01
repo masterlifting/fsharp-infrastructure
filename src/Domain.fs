@@ -5,12 +5,16 @@ module Errors =
         | InvalidResponse of string
         | InvalidRequest of string
         | PersistenceError of string
+        | ParsingError of string
+        | MappingError of string
 
         member this.Message =
             match this with
             | InvalidResponse error -> error
             | InvalidRequest error -> error
             | PersistenceError error -> error
+            | ParsingError error -> error
+            | MappingError error -> error
 
     type LogicalError =
         | NotSupported

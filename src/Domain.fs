@@ -27,7 +27,7 @@ module Errors =
             | NotImplemented -> "Not implemented"
             | Cancelled task -> $"Task '{task}' was cancelled"
 
-    type AppError =
+    type ApiError =
         | Infrastructure of InfrastructureError
         | Logical of LogicalError
 

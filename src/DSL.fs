@@ -96,6 +96,19 @@ module SerDe =
             with ex ->
                 Error ex.Message
 
+module ResultAsync =
+    let bind f =
+        function
+        | Ok x -> f x
+        | Error e -> async { return Error e }
+
+    let map f =
+        bind (fun x -> async { return Ok(f x) })
+
+    let mapError f =
+        bind (fun x -> async { return Error(f x) })
+
+
 module private CETest =
     type WorkflowBuilder() =
         member _.Bind(m, f) = Option.bind f m

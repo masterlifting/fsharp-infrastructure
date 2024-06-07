@@ -17,15 +17,15 @@ module Errors =
             | Mapping error -> error
 
     type LogicalError =
-        | NotSupported
-        | NotImplemented
+        | NotSupported of string
+        | NotImplemented of string
         | Cancelled of string
 
         member this.Message =
             match this with
-            | NotSupported -> "Not supported"
-            | NotImplemented -> "Not implemented"
-            | Cancelled task -> $"Task '{task}' was cancelled"
+            | NotSupported source -> $"{source} not supported."
+            | NotImplemented source -> $"{source} not implemented."
+            | Cancelled source -> $"{source}' was cancelled."
 
     type ApiError =
         | Infrastructure of InfrastructureError

@@ -91,12 +91,12 @@ let private configLogger logLevelstr provider =
 
         let logToConsole message level =
             match level with
-            | Error -> log <| fun timeStamp -> $"\u001b[31mError [{timeStamp}] {message}\u001b[0m"
-            | Warning -> log <| fun timeStamp -> $"\u001b[33mWarning\u001b[0m [{timeStamp}] {message}"
-            | Debug -> log <| fun timeStamp -> $"\u001b[35mDebug\u001b[0m [{timeStamp}] {message}"
-            | Trace -> log <| fun timeStamp -> $"\u001b[90mTrace\u001b[0m [{timeStamp}] {message}"
-            | Success -> log <| fun timeStamp -> $"\u001b[32mSuccess\u001b[0m [{timeStamp}] {message}"
-            | _ -> log <| fun timeStamp -> $"\u001b[36mInfo\u001b[0m [{timeStamp}] {message}"
+            | Error -> log <| fun timeStamp -> $"\u001b[31m[{timeStamp}] {message}\u001b[0m"
+            | Warning -> log <| fun timeStamp -> $"\u001b[33m[{timeStamp}]\u001b[0m {message}"
+            | Debug -> log <| fun timeStamp -> $"\u001b[35m[{timeStamp}]\u001b[0m {message}"
+            | Trace -> log <| fun timeStamp -> $"\u001b[90m[{timeStamp}]\u001b[0m {message}"
+            | Success -> log <| fun timeStamp -> $"\u001b[32m[{timeStamp}]{message}\u001b[0m"
+            | _ -> log <| fun timeStamp -> $"\u001b[36m[{timeStamp}]\u001b[0m {message}"
 
         logger <- Some(logLevel |> createLogger <| logToConsole)
 

@@ -102,11 +102,25 @@ module ResultAsync =
         | Ok x -> f x
         | Error e -> async { return Error e }
 
-    let map f =
-        bind (fun x -> async { return Ok(f x) })
+    let bind2 f asyncResult =
+        async {
+            let! result = asyncResult
+            match result with
+            | Ok value -> f value
+            | Error err -> async { return Error err } |> ignore
+        }
 
-    let mapError f =
-        bind (fun x -> async { return Error(f x) })
+    let map f asyncResult =
+        async {
+            let! result = asyncResult
+            return Result.map f result
+        }
+
+    let mapError f asyncResult =
+        async {
+            let! result = asyncResult
+            return Result.mapError f result
+        }
 
 
 module private CETest =

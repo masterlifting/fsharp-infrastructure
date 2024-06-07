@@ -7,6 +7,7 @@ module Errors =
         | Persistence of string
         | Parsing of string
         | Mapping of string
+        | Serialization of string
 
         member this.Message =
             match this with
@@ -15,6 +16,7 @@ module Errors =
             | Persistence error -> error
             | Parsing error -> error
             | Mapping error -> error
+            | Serialization error -> error
 
     type LogicalError =
         | NotSupported of string

@@ -11,12 +11,12 @@ module Errors =
 
         member this.Message =
             match this with
-            | InvalidResponse error -> error
-            | InvalidRequest error -> error
-            | Persistence error -> error
-            | Parsing error -> error
-            | Mapping error -> error
-            | Serialization error -> error
+            | InvalidResponse error -> $"Invalid.{error}"
+            | InvalidRequest error -> $"Invalid.{error}"
+            | Persistence error -> $"Persistence.{error}"
+            | Parsing error -> $"Parsing.{error}"
+            | Mapping error -> $"Mapping.{error}"
+            | Serialization error -> $"Serialization.{error}"
 
     type LogicalError =
         | NotSupported of string
@@ -25,9 +25,9 @@ module Errors =
 
         member this.Message =
             match this with
-            | NotSupported source -> $"{source} not supported."
-            | NotImplemented source -> $"{source} not implemented."
-            | Cancelled source -> $"{source}' was cancelled."
+            | NotSupported source -> $"The '{source}' not supported."
+            | NotImplemented source -> $"The '{source}' not implemented."
+            | Cancelled source -> $"The '{source}' was cancelled."
 
     type ApiError =
         | Infrastructure of InfrastructureError
@@ -35,8 +35,8 @@ module Errors =
 
         member this.Message =
             match this with
-            | Infrastructure error -> error.Message
-            | Logical error -> error.Message
+            | Infrastructure error -> $"Infrastructure.{error.Message}"
+            | Logical error -> $"Logical.{error.Message}"
 
 module Graph =
 

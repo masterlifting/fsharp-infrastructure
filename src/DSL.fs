@@ -98,17 +98,15 @@ module SerDe =
                 Error <| Serialization ex.Message
 
 module ResultAsync =
-    let bind f =
+    let wrap f =
         function
         | Ok x -> f x
         | Error e -> async { return Error e }
 
-    let bind2 f asyncResult =
+    let bind f asyncResult =
         async {
             let! result = asyncResult
-            match result with
-            | Ok value -> f value
-            | Error err -> async { return Error err } |> ignore
+            return Result.bind f result
         }
 
     let map f asyncResult =

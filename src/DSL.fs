@@ -1,4 +1,5 @@
 module Infrastructure.DSL
+
 open Infrastructure.Domain.Errors
 
 open System
@@ -41,6 +42,17 @@ module Seq =
             |> Result.bind (fun items -> itemRes |> Result.map (fun item -> item :: items))
 
         Seq.fold map (Ok []) data |> Result.map List.rev
+
+    let resultOrErrors data =
+        let map (items, errors) itemRes =
+            match itemRes with
+            | Ok item -> item :: items, errors
+            | Error error -> items, error :: errors
+
+        match Seq.fold map ([], []) data with
+        | items, [] -> Ok items
+        | _, errors -> Error errors
+
 
 module Graph =
     open Domain.Graph

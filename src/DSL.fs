@@ -1,4 +1,4 @@
-module Infrastructure.DSL
+module Infrastructure.Dsl
 
 open Infrastructure.Domain.Errors
 
@@ -36,14 +36,20 @@ module Threading =
     let notCanceled (cToken: CancellationToken) = not <| cToken.IsCancellationRequested
 
 module Seq =
-    let resultOrError data =
+    /// <summary>
+    /// Reduces a sequence of results into a single result. If any of the results is an error, the whole result is an error.
+    /// </summary>
+    let roe data =
         let map state itemRes =
             state
             |> Result.bind (fun items -> itemRes |> Result.map (fun item -> item :: items))
 
         Seq.fold map (Ok []) data |> Result.map List.rev
-
-    let resultOrErrors data =
+    
+    /// <summary>
+    /// Reduces a sequence of results into a single result of items or errors
+    /// </summary>
+    let roes data =
         let map (items, errors) itemRes =
             match itemRes with
             | Ok item -> item :: items, errors

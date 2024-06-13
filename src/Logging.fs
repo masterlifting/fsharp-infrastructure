@@ -86,7 +86,7 @@ let private configLogger logLevelstr provider =
     | Console ->
 
         let log createMessage =
-            createMessage <| System.DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
+            createMessage <| System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
             |> printfn
 
         let logToConsole message level =
@@ -104,7 +104,7 @@ let private configLogger logLevelstr provider =
 
         let log createMessage =
             let message =
-                createMessage <| System.DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
+                createMessage <| System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
 
 
             System.IO.File.AppendAllText("log.txt", message + System.Environment.NewLine)

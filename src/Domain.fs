@@ -25,8 +25,8 @@ module Errors =
 
         member this.Message =
             match this with
-            | NotSupported source -> $"The '{source}' not supported."
-            | NotImplemented source -> $"The '{source}' not implemented."
+            | NotSupported source -> $"The '{source}' is not supported."
+            | NotImplemented source -> $"The '{source}' is not implemented."
             | Cancelled source -> $"The '{source}' was cancelled."
 
     type ApiError =

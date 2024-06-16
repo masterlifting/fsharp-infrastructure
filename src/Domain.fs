@@ -35,8 +35,8 @@ module Errors =
 
         member this.Message =
             match this with
-            | Infrastructure error -> $"Infrastructure.{error.Message}"
-            | Logical error -> $"Logical.{error.Message}"
+            | Infrastructure error -> $"Infrastructure. {error.Message}"
+            | Logical error -> $"Logical. {error.Message}"
 
 module Graph =
 

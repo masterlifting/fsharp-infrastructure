@@ -5,6 +5,7 @@ module Errors =
         | InvalidResponse of string
         | InvalidRequest of string
         | Persistence of string
+        | Web of string
         | Parsing of string
         | Mapping of string
         | Serialization of string
@@ -14,6 +15,7 @@ module Errors =
             | InvalidResponse error -> $"Invalid.{error}"
             | InvalidRequest error -> $"Invalid.{error}"
             | Persistence error -> $"Persistence.{error}"
+            | Web error -> $"Web.{error}"
             | Parsing error -> $"Parsing.{error}"
             | Mapping error -> $"Mapping.{error}"
             | Serialization error -> $"Serialization.{error}"

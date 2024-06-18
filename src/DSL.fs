@@ -45,7 +45,7 @@ module Seq =
             |> Result.bind (fun items -> itemRes |> Result.map (fun item -> item :: items))
 
         Seq.fold map (Ok []) data |> Result.map List.rev
-    
+
     /// <summary>
     /// Reduces a sequence of results into a single result of items or errors
     /// </summary>
@@ -127,10 +127,24 @@ module ResultAsync =
             return Result.bind f result
         }
 
+    let bind' f asyncResult =
+        async {
+            match! asyncResult with
+            | Ok result -> return! f result
+            | Error err -> return Error err
+        }
+
     let map f asyncResult =
         async {
             let! result = asyncResult
             return Result.map f result
+        }
+
+    let map' f asyncResult =
+        async {
+            match! asyncResult with
+            | Ok result -> return Ok <| f result
+            | Error err -> return Error err
         }
 
     let mapError f asyncResult =

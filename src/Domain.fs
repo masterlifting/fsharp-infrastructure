@@ -21,12 +21,14 @@ module Errors =
             | Serialization error -> $"Serialization.{error}"
 
     type LogicalError =
+        | Business of string
         | NotSupported of string
         | NotImplemented of string
         | Cancelled of string
 
         member this.Message =
             match this with
+            | Business error -> error
             | NotSupported source -> $"The '{source}' is not supported."
             | NotImplemented source -> $"The '{source}' is not implemented."
             | Cancelled source -> $"The '{source}' was cancelled."

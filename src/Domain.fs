@@ -2,45 +2,43 @@
 
 module Errors =
     type InfrastructureError =
-        | InvalidResponse of string
-        | InvalidRequest of string
-        | Persistence of string
-        | Web of string
-        | Parsing of string
-        | Mapping of string
-        | Serialization of string
+        | WebError of string
+        | PersistenceError of string
+        | ParsingError of string
+        | MappingError of string
+        | SerializationError of string
+        | ConfigurationError of string
 
         member this.Message =
             match this with
-            | InvalidResponse error -> $"Invalid.{error}"
-            | InvalidRequest error -> $"Invalid.{error}"
-            | Persistence error -> $"Persistence.{error}"
-            | Web error -> $"Web.{error}"
-            | Parsing error -> $"Parsing.{error}"
-            | Mapping error -> $"Mapping.{error}"
-            | Serialization error -> $"Serialization.{error}"
+            | WebError error -> $"Web.{error}"
+            | PersistenceError error -> $"Persistence.{error}"
+            | ParsingError error -> $"Parsing.{error}"
+            | MappingError error -> $"Mapping.{error}"
+            | SerializationError error -> $"Serialization.{error}"
+            | ConfigurationError error -> $"Configuration.{error}"
 
     type LogicalError =
-        | Business of string
-        | NotSupported of string
-        | NotImplemented of string
-        | Cancelled of string
+        | BusinessError of string
+        | NotSupportedError of string
+        | NotImplementedError of string
+        | CancelledError of string
 
         member this.Message =
             match this with
-            | Business error -> error
-            | NotSupported source -> $"The '{source}' is not supported."
-            | NotImplemented source -> $"The '{source}' is not implemented."
-            | Cancelled source -> $"The '{source}' was cancelled."
+            | BusinessError error -> error
+            | NotSupportedError source -> $"The '{source}' is not supported."
+            | NotImplementedError source -> $"The '{source}' is not implemented."
+            | CancelledError source -> $"The '{source}' was cancelled."
 
-    type ApiError =
-        | Infrastructure of InfrastructureError
-        | Logical of LogicalError
+    type ErrorType =
+        | InfrastructureError of InfrastructureError
+        | LogicalError of LogicalError
 
         member this.Message =
             match this with
-            | Infrastructure error -> $"Infrastructure. {error.Message}"
-            | Logical error -> $"Logical. {error.Message}"
+            | InfrastructureError error -> $"Infrastructure. {error.Message}"
+            | LogicalError error -> $"Logical. {error.Message}"
 
 module Graph =
 

@@ -109,7 +109,13 @@ let get fileType =
     | Json file -> getJsonConfiguration file
     | Yaml file -> getYamlConfiguration file
 
-let getSection<'a> (configuration: IConfigurationRoot) sectionName =
+let tryGet fileType =
+    try
+        Ok <| get fileType
+    with ex ->
+        Error <| ex.Message
+
+let getSection<'a> sectionName (configuration: IConfigurationRoot) =
     let section = configuration.GetSection(sectionName)
 
     section

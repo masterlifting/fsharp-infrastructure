@@ -86,8 +86,7 @@ let private configLogger logLevelstr provider =
     | Console ->
 
         let log createMessage =
-            createMessage <| System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-            |> printfn
+            createMessage <| System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") |> printfn
 
         let logToConsole message level =
             match level with
@@ -103,8 +102,7 @@ let private configLogger logLevelstr provider =
     | File ->
 
         let log createMessage =
-            let message =
-                createMessage <| System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            let message = createMessage <| System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
 
 
             System.IO.File.AppendAllText("log.txt", message + System.Environment.NewLine)
@@ -136,14 +134,14 @@ let private logProcessor =
 
         innerLoop ())
 
-let useConsole config =
-    Configuration.getSection<string> config "Logging:LogLevel:Default"
-    |> configLogger
+open Infrastructure.Configuration
+
+let useConsole configuration =
+    configuration |> getSection<string> "Logging:LogLevel:Default" |> configLogger
     <| Console
 
-let useFile config =
-    Configuration.getSection<string> config "Logging:LogLevel:Default"
-    |> configLogger
+let useFile configuration =
+    configuration |> getSection<string> "Logging:LogLevel:Default" |> configLogger
     <| File
 
 module Log =

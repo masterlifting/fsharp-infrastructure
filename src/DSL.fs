@@ -89,13 +89,13 @@ module SerDe =
             try
                 Ok <| JsonSerializer.Serialize data
             with ex ->
-                Error <| SerializationError ex.Message
+                Error <| Serialization ex.Message
 
         let deserialize<'a> (data: string) =
             try
                 Ok <| JsonSerializer.Deserialize<'a> data
             with ex ->
-                Error <| SerializationError ex.Message
+                Error <| Serialization ex.Message
 
     module Yaml =
         open YamlDotNet.Serialization
@@ -107,13 +107,13 @@ module SerDe =
             try
                 Ok <| serializer.Serialize data
             with ex ->
-                Error <| SerializationError ex.Message
+                Error <| Serialization ex.Message
 
         let deserialize<'a> (data: string) =
             try
                 Ok <| deserializer.Deserialize<'a> data
             with ex ->
-                Error <| SerializationError ex.Message
+                Error <| Serialization ex.Message
 
 module ResultAsync =
     let wrap f =

@@ -2,6 +2,8 @@ module Infrastructure.Configuration
 
 open System
 open Microsoft.Extensions.Configuration
+open Infrastructure.Domain.Errors
+open Infrastructure.Dsl.ActivePatterns
 
 type File =
     | Json of string
@@ -89,14 +91,14 @@ module private Yaml =
     let AddYamlFile builder path =
         addYamlFileWithOptions builder null path false false
 
-open Yaml
-
 let private getJsonConfiguration fileName =
     let file = $"{fileName}.json"
 
     ConfigurationBuilder()
         .AddJsonFile(file, optional = false, reloadOnChange = true)
         .Build()
+
+open Yaml
 
 let private getYamlConfiguration fileName =
     let file = $"{fileName}.yaml"
@@ -110,8 +112,12 @@ let get fileType =
     | Yaml file -> getYamlConfiguration file
 
 let getSection<'a> sectionName (configuration: IConfigurationRoot) =
-    let section = configuration.GetSection(sectionName)
-
-    section
+    configuration.GetSection(sectionName)
     |> Option.ofObj
     |> Option.bind (fun section -> if section.Exists() then Some <| section.Get<'a>() else None)
+
+let getEnvVar key =
+    try
+        Ok <| (Environment.GetEnvironmentVariable(key) |> Option.ofObj)
+    with ex ->
+        Error <| Configuration ex.Message

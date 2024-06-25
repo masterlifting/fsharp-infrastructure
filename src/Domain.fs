@@ -1,7 +1,7 @@
 ﻿module Infrastructure.Domain
 
 module Errors =
-    type ErrorType =
+    type Error' =
         | Web of string
         | Persistence of string
         | Parsing of string
@@ -15,16 +15,16 @@ module Errors =
 
         member this.Message =
             match this with
-            | Web error -> $"Web.{error}"
-            | Persistence error -> $"Persistence.{error}"
-            | Parsing error -> $"Parsing.{error}"
-            | Mapping error -> $"Mapping.{error}"
-            | Serialization error -> $"Serialization.{error}"
-            | Configuration error -> $"Configuration.{error}"
-            | Business error -> $"Business.{error}"
-            | NotSupported source -> $"The '{source}' is not supported."
-            | NotImplemented source -> $"The '{source}' is not implemented."
-            | Cancelled source -> $"The '{source}' was cancelled."
+            | Web error -> $"Web: {error}"
+            | Persistence error -> $"Persistence: {error}"
+            | Parsing error -> $"Parsing: {error}"
+            | Mapping error -> $"Mapping: {error}"
+            | Serialization error -> $"Serialization: {error}"
+            | Configuration error -> $"Configuration: {error}"
+            | Business error -> $"Business: {error}"
+            | NotSupported source -> $"'{source}' is not supported."
+            | NotImplemented source -> $"'{source}' is not implemented."
+            | Cancelled source -> $"'{source}' was cancelled."
 
 module Graph =
 

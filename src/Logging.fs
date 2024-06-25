@@ -34,7 +34,7 @@ let private parseLevel level =
         | _ -> Information
     | None -> Information
 
-let private createLogger level log =
+let private create level log =
     match level with
     | Error ->
         { logTrace = ignore
@@ -42,81 +42,80 @@ let private createLogger level log =
           logInfo = ignore
           logWarning = ignore
           logSuccess = ignore
-          logError = fun message -> log message Error }
+          logError = log Error }
     | Success ->
         { logTrace = ignore
           logDebug = ignore
           logWarning = ignore
           logInfo = ignore
-          logSuccess = fun message -> log message Success
-          logError = fun message -> log message Error }
+          logSuccess = log Success
+          logError = log Error }
     | Warning ->
         { logTrace = ignore
           logDebug = ignore
           logInfo = ignore
-          logWarning = fun message -> log message Warning
-          logSuccess = fun message -> log message Success
-          logError = fun message -> log message Error }
+          logWarning = log Warning
+          logSuccess = log Success
+          logError = log Error }
     | Information ->
         { logTrace = ignore
           logDebug = ignore
-          logInfo = fun message -> log message Information
-          logWarning = fun message -> log message Warning
-          logSuccess = fun message -> log message Success
-          logError = fun message -> log message Error }
+          logInfo = log Information
+          logWarning = log Warning
+          logSuccess = log Success
+          logError = log Error }
     | Debug ->
         { logTrace = ignore
-          logDebug = fun message -> log message Debug
-          logInfo = fun message -> log message Information
-          logWarning = fun message -> log message Warning
-          logSuccess = fun message -> log message Success
-          logError = fun message -> log message Error }
+          logDebug = log Debug
+          logInfo = log Information
+          logWarning = log Warning
+          logSuccess = log Success
+          logError = log Error }
     | Trace ->
-        { logTrace = fun message -> log message Trace
-          logDebug = fun message -> log message Debug
-          logInfo = fun message -> log message Information
-          logWarning = fun message -> log message Warning
-          logSuccess = fun message -> log message Success
-          logError = fun message -> log message Error }
+        { logTrace = log Trace
+          logDebug = log Debug
+          logInfo = log Information
+          logWarning = log Warning
+          logSuccess = log Success
+          logError = log Error }
 
-let private configLogger logLevelstr provider =
-    let logLevel = parseLevel logLevelstr
+let private configLogger provider logLevel =
+    let level = parseLevel logLevel
 
     match provider with
     | Console ->
 
-        let log createMessage =
+        let logMessage createMessage =
             createMessage <| System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") |> printfn
 
-        let logToConsole message level =
+        let log level message =
             match level with
-            | Error -> log <| fun timeStamp -> $"\u001b[31m[{timeStamp}] {message}\u001b[0m"
-            | Warning -> log <| fun timeStamp -> $"\u001b[33m[{timeStamp}]\u001b[0m {message}"
-            | Debug -> log <| fun timeStamp -> $"\u001b[35m[{timeStamp}]\u001b[0m {message}"
-            | Trace -> log <| fun timeStamp -> $"\u001b[90m[{timeStamp}]\u001b[0m {message}"
-            | Success -> log <| fun timeStamp -> $"\u001b[32m[{timeStamp}]{message}\u001b[0m"
-            | _ -> log <| fun timeStamp -> $"\u001b[36m[{timeStamp}]\u001b[0m {message}"
+            | Error -> logMessage <| fun timeStamp -> $"\u001b[31m[%s{timeStamp}] %s{message}\u001b[0m"
+            | Warning -> logMessage <| fun timeStamp -> $"\u001b[33m[%s{timeStamp}]\u001b[0m %s{message}"
+            | Debug -> logMessage <| fun timeStamp -> $"\u001b[35m[%s{timeStamp}]\u001b[0m %s{message}"
+            | Trace -> logMessage <| fun timeStamp -> $"\u001b[90m[%s{timeStamp}]\u001b[0m %s{message}"
+            | Success -> logMessage <| fun timeStamp -> $"\u001b[32m[%s{timeStamp}]%s{message}\u001b[0m"
+            | _ -> logMessage <| fun timeStamp -> $"\u001b[36m[%s{timeStamp}]\u001b[0m %s{message}"
 
-        logger <- Some(logLevel |> createLogger <| logToConsole)
+        logger <- Some(create level log)
 
     | File ->
 
-        let log createMessage =
+        let logMessage createMessage =
             let message = createMessage <| System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-
 
             System.IO.File.AppendAllText("log.txt", message + System.Environment.NewLine)
 
-        let logToFile message level =
+        let log level message =
             match level with
-            | Error -> log <| fun timeStamp -> $"Error [{timeStamp}] {message}"
-            | Warning -> log <| fun timeStamp -> $"Warning [{timeStamp}] {message}"
-            | Debug -> log <| fun timeStamp -> $"Debug [{timeStamp}] {message}"
-            | Trace -> log <| fun timeStamp -> $"Trace [{timeStamp}] {message}"
-            | Success -> log <| fun timeStamp -> $"Success [{timeStamp}] {message}"
-            | _ -> log <| fun timeStamp -> $"Info [{timeStamp}] {message}"
+            | Error -> logMessage <| fun timeStamp -> $"Error [%s{timeStamp}] %s{message}"
+            | Warning -> logMessage <| fun timeStamp -> $"Warning [%s{timeStamp}] %s{message}"
+            | Debug -> logMessage <| fun timeStamp -> $"Debug [%s{timeStamp}] %s{message}"
+            | Trace -> logMessage <| fun timeStamp -> $"Trace [%s{timeStamp}] %s{message}"
+            | Success -> logMessage <| fun timeStamp -> $"Success [%s{timeStamp}] %s{message}"
+            | _ -> logMessage <| fun timeStamp -> $"Info [%s{timeStamp}] %s{message}"
 
-        logger <- Some(logLevel |> createLogger <| logToFile)
+        logger <- Some(create level log)
 
 let private logProcessor =
     MailboxProcessor.StartImmediate(fun inbox ->
@@ -136,29 +135,31 @@ let private logProcessor =
 
 open Infrastructure.Configuration
 
+[<Literal>]
+let sectionName = "Logging:LogLevel:Default"
+
 let useConsole configuration =
-    configuration |> getSection<string> "Logging:LogLevel:Default" |> configLogger
-    <| Console
+    configuration |> getSection<string> sectionName |> configLogger Console
 
 let useFile configuration =
-    configuration |> getSection<string> "Logging:LogLevel:Default" |> configLogger
-    <| File
+    configuration |> getSection<string> sectionName |> configLogger File
 
+[<RequireQualifiedAccess>]
 module Log =
-    let trace m =
-        logProcessor.Post <| fun logger' -> logger'.logTrace m
+    let trace msg =
+        logProcessor.Post <| fun logger' -> logger'.logTrace msg
 
-    let debug m =
-        logProcessor.Post <| fun logger' -> logger'.logDebug m
+    let debug msg =
+        logProcessor.Post <| fun logger' -> logger'.logDebug msg
 
-    let info m =
-        logProcessor.Post <| fun logger' -> logger'.logInfo m
+    let info msg =
+        logProcessor.Post <| fun logger' -> logger'.logInfo msg
 
-    let warning m =
-        logProcessor.Post <| fun logger' -> logger'.logWarning m
+    let warning msg =
+        logProcessor.Post <| fun logger' -> logger'.logWarning msg
 
-    let error m =
-        logProcessor.Post <| fun logger' -> logger'.logError m
+    let error msg =
+        logProcessor.Post <| fun logger' -> logger'.logError msg
 
-    let success m =
-        logProcessor.Post <| fun logger' -> logger'.logSuccess m
+    let success msg =
+        logProcessor.Post <| fun logger' -> logger'.logSuccess msg

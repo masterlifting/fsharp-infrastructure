@@ -106,6 +106,12 @@ let private getYamlConfiguration fileName =
     let builder = builder |> AddYamlFile <| file
     builder.Build()
 
+///<summary>
+/// Get configuration from a file
+/// </summary>
+/// <param name="fileType">File type</param>
+/// <returns>Configuration</returns>
+/// <exception cref="Exception">Configuration exception</exception>
 let get fileType =
     match fileType with
     | Json file -> getJsonConfiguration file
@@ -118,6 +124,14 @@ let getSection<'a> sectionName (configuration: IConfigurationRoot) =
 
 let getEnvVar key =
     try
-        Ok <| (Environment.GetEnvironmentVariable(key) |> Option.ofObj)
+        Ok
+        <| match Environment.GetEnvironmentVariable(key) with
+           | IsString value -> Some value
+           | _ -> None
     with ex ->
         Error <| Configuration ex.Message
+
+let getEnvVar' key configuration =
+    match configuration |> getSection<string> key with
+    | Some value -> Ok <| Some value
+    | None -> getEnvVar key

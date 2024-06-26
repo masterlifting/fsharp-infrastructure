@@ -110,7 +110,7 @@ let private getYamlConfiguration fileName =
 /// Get configuration from a file
 /// </summary>
 /// <param name="fileType">File type</param>
-/// <returns>Configuration</returns>
+/// <returns>IConfigurationRoot</returns>
 /// <exception cref="Exception">Configuration exception</exception>
 let get fileType =
     match fileType with
@@ -122,6 +122,11 @@ let getSection<'a> sectionName (configuration: IConfigurationRoot) =
     |> Option.ofObj
     |> Option.bind (fun section -> if section.Exists() then Some <| section.Get<'a>() else None)
 
+/// <summary>
+/// Get environment variable from environment variables.
+/// </summary>
+/// <param name="key"> Environment variable key </param>
+/// <returns> Monad with environment variable value as a string </returns>
 let getEnvVar key =
     try
         Ok
@@ -131,6 +136,12 @@ let getEnvVar key =
     with ex ->
         Error <| Configuration ex.Message
 
+/// <summary>
+/// Get environment variable from a configuration file first, then from environment variables.
+/// </summary>
+/// <param name="key"> Environment variable key </param>
+/// <param name="configuration"> IConfigurationRoot </param>
+/// <returns> Monad with environment variable value as a string </returns>
 let getEnvVar' key configuration =
     match configuration |> getSection<string> key with
     | Some value -> Ok <| Some value

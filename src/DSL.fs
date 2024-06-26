@@ -84,16 +84,49 @@ module Graph =
 module SerDe =
     module Json =
         open System.Text.Json
+        let private getWebApiOptions () =
+            let options = JsonSerializerOptions()
+            options.PropertyNamingPolicy <- JsonNamingPolicy.CamelCase
+            options
+            
+        let private getStandardOptions () =
+            let options = JsonSerializerOptions()
+            options
+        type OptionType =
+            | WebApi
+            | Standard
 
         let serialize data =
             try
                 Ok <| JsonSerializer.Serialize data
             with ex ->
                 Error <| Serialization ex.Message
+                
+        let serialize' optionsType data  =
+            
+            let options =
+                match optionsType with
+                | OptionType.WebApi -> getWebApiOptions()
+                | OptionType.Standard -> getStandardOptions()
+            try
+                Ok <| JsonSerializer.Serialize (data, options)
+            with ex ->
+                Error <| Serialization ex.Message
 
         let deserialize<'a> (data: string) =
             try
                 Ok <| JsonSerializer.Deserialize<'a> data
+            with ex ->
+                Error <| Serialization ex.Message
+                
+        let deserialize'<'a> optionsType (data: string)  =
+            
+            let options =
+                match optionsType with
+                | OptionType.WebApi -> getWebApiOptions()
+                | OptionType.Standard -> getStandardOptions()
+            try
+                Ok <| JsonSerializer.Deserialize<'a> (data, options)
             with ex ->
                 Error <| Serialization ex.Message
 

@@ -24,7 +24,7 @@ module Errors =
             | Business error -> $"Business: {error}"
             | NotSupported source -> $"'{source}' is not supported."
             | NotImplemented source -> $"'{source}' is not implemented."
-            | Cancelled source -> $"'{source}' was cancelled."
+            | Cancelled source -> $"'{source}' task was cancelled."
 
 module Graph =
 

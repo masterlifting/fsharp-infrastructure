@@ -1,6 +1,9 @@
 ﻿module Infrastructure.Domain
 
 module Errors =
+
+    type ErrorReason = { Message: string; Code: int option }
+
     type Error' =
         | Web of string
         | Persistence of string
@@ -9,8 +12,10 @@ module Errors =
         | Serialization of string
         | Configuration of string
         | Business of string
+        | NotFound of string
         | NotSupported of string
         | NotImplemented of string
+        | Denied of string
         | Cancelled of string
 
         member this.Message =
@@ -24,6 +29,8 @@ module Errors =
             | Business error -> $"Business: {error}"
             | NotSupported source -> $"'{source}' is not supported."
             | NotImplemented source -> $"'{source}' is not implemented."
+            | NotFound source -> $"'{source}' was not found."
+            | Denied source -> $"'{source}' is denied."
             | Cancelled source -> $"'{source}' task was cancelled."
 
 module Graph =

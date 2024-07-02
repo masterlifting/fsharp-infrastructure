@@ -1,10 +1,10 @@
-module Infrastructure.Dsl
+module Infrastructure.DSL
 
 open Infrastructure.Domain.Errors
 
 open System
 
-module ActivePatterns =
+module AP =
     let (|IsString|_|) (input: string) =
         match String.IsNullOrWhiteSpace input with
         | false -> Some input
@@ -186,26 +186,31 @@ module ResultAsync =
             return Result.mapError f result
         }
 
-
+module CE =
+    type ResultAsyncBuilder() =
+        member _.Bind(m, f) = ResultAsync.bind' f m
+        member _.Return(m) = ResultAsync.map' id m
+        
+    let resultAsync = ResultAsyncBuilder()
 module private CETest =
     type WorkflowBuilder() =
         member _.Bind(m, f) = Option.bind f m
         member _.Return(m) = Some m
 
     let strToInt (s: string) =
-        match System.Int32.TryParse s with
+        match Int32.TryParse s with
         | true, i -> Some i
         | _ -> None
 
-    let maybe = new WorkflowBuilder()
+    let maybe = WorkflowBuilder()
 
     let strWorkflow (data: string array) =
         maybe {
 
-            let! a = strToInt data.[0]
-            printfn "a: %d" a
-            let! b = strToInt data.[1]
-            let! c = strToInt data.[2]
+            let! a = strToInt data[0]
+            printfn $"a: %d{a}"
+            let! b = strToInt data[1]
+            let! c = strToInt data[2]
             return a + b + c
         }
 

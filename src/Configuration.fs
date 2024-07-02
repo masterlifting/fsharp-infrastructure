@@ -3,7 +3,7 @@ module Infrastructure.Configuration
 open System
 open Microsoft.Extensions.Configuration
 open Infrastructure.Domain.Errors
-open Infrastructure.Dsl.ActivePatterns
+open Infrastructure.DSL.AP
 
 type File =
     | Json of string

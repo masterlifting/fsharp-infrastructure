@@ -5,7 +5,7 @@ module Errors =
     type ErrorReason = { Message: string; Code: int option }
 
     type Error' =
-        | Web of string
+        | Web of ErrorReason
         | Persistence of string
         | Parsing of string
         | Mapping of string
@@ -27,11 +27,11 @@ module Errors =
             | Serialization error -> $"Serialization. {error}"
             | Configuration error -> $"Configuration. {error}"
             | Business error -> $"Business. {error}"
-            | NotSupported source -> $"The '{source}' is not supported."
-            | NotImplemented source -> $"The '{source}' is not implemented."
-            | NotFound source -> $"The '{source}' was not found."
-            | Denied source -> $"The '{source}' is denied."
-            | Cancelled source -> $"The '{source}' task was cancelled."
+            | NotSupported source -> $"The '{source}' not supported."
+            | NotImplemented source -> $"The '{source}' not implemented."
+            | NotFound source -> $"The '{source}' not found."
+            | Denied source -> $"The '{source}' denied."
+            | Cancelled source -> $"The '{source}' task cancelled."
 
 module Graph =
 

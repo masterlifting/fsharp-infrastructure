@@ -85,6 +85,8 @@ let private configLogger provider logLevel =
     match provider with
     | Console ->
 
+        System.Console.OutputEncoding <- System.Text.Encoding.UTF8
+        
         let logMessage createMessage =
             createMessage <| System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") |> printfn
 

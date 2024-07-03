@@ -20,18 +20,18 @@ module Errors =
 
         member this.Message =
             match this with
-            | Web error -> $"Web: {error}"
-            | Persistence error -> $"Persistence: {error}"
-            | Parsing error -> $"Parsing: {error}"
-            | Mapping error -> $"Mapping: {error}"
-            | Serialization error -> $"Serialization: {error}"
-            | Configuration error -> $"Configuration: {error}"
-            | Business error -> $"Business: {error}"
-            | NotSupported source -> $"'{source}' is not supported."
-            | NotImplemented source -> $"'{source}' is not implemented."
-            | NotFound source -> $"'{source}' was not found."
-            | Denied source -> $"'{source}' is denied."
-            | Cancelled source -> $"'{source}' task was cancelled."
+            | Web error -> $"Web. {error}"
+            | Persistence error -> $"Persistence. {error}"
+            | Parsing error -> $"Parsing. {error}"
+            | Mapping error -> $"Mapping. {error}"
+            | Serialization error -> $"Serialization. {error}"
+            | Configuration error -> $"Configuration. {error}"
+            | Business error -> $"Business. {error}"
+            | NotSupported source -> $"The '{source}' is not supported."
+            | NotImplemented source -> $"The '{source}' is not implemented."
+            | NotFound source -> $"The '{source}' was not found."
+            | Denied source -> $"The '{source}' is denied."
+            | Cancelled source -> $"The '{source}' task was cancelled."
 
 module Graph =
 

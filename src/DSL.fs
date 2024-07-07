@@ -84,14 +84,16 @@ module Graph =
 module SerDe =
     module Json =
         open System.Text.Json
+
         let private getWebApiOptions () =
             let options = JsonSerializerOptions()
             options.PropertyNamingPolicy <- JsonNamingPolicy.CamelCase
             options
-            
+
         let private getStandardOptions () =
             let options = JsonSerializerOptions()
             options
+
         type OptionType =
             | WebApi
             | Standard
@@ -101,15 +103,16 @@ module SerDe =
                 Ok <| JsonSerializer.Serialize data
             with ex ->
                 Error <| Serialization ex.Message
-                
-        let serialize' optionsType data  =
-            
+
+        let serialize' optionsType data =
+
             let options =
                 match optionsType with
-                | OptionType.WebApi -> getWebApiOptions()
-                | OptionType.Standard -> getStandardOptions()
+                | OptionType.WebApi -> getWebApiOptions ()
+                | OptionType.Standard -> getStandardOptions ()
+
             try
-                Ok <| JsonSerializer.Serialize (data, options)
+                Ok <| JsonSerializer.Serialize(data, options)
             with ex ->
                 Error <| Serialization ex.Message
 
@@ -118,15 +121,16 @@ module SerDe =
                 Ok <| JsonSerializer.Deserialize<'a> data
             with ex ->
                 Error <| Serialization ex.Message
-                
-        let deserialize'<'a> optionsType (data: string)  =
-            
+
+        let deserialize'<'a> optionsType (data: string) =
+
             let options =
                 match optionsType with
-                | OptionType.WebApi -> getWebApiOptions()
-                | OptionType.Standard -> getStandardOptions()
+                | OptionType.WebApi -> getWebApiOptions ()
+                | OptionType.Standard -> getStandardOptions ()
+
             try
-                Ok <| JsonSerializer.Deserialize<'a> (data, options)
+                Ok <| JsonSerializer.Deserialize<'a>(data, options)
             with ex ->
                 Error <| Serialization ex.Message
 
@@ -180,7 +184,10 @@ module ResultAsync =
             | Error err -> return Error err
         }
 
-    let mapError f asyncResult =
+    let mapError f result =
+        async { return Result.mapError f result }
+
+    let mapError' f asyncResult =
         async {
             let! result = asyncResult
             return Result.mapError f result
@@ -190,8 +197,9 @@ module CE =
     type ResultAsyncBuilder() =
         member _.Bind(m, f) = ResultAsync.bind' f m
         member _.Return(m) = ResultAsync.map' id m
-        
+
     let resultAsync = ResultAsyncBuilder()
+
 module private CETest =
     type WorkflowBuilder() =
         member _.Bind(m, f) = Option.bind f m

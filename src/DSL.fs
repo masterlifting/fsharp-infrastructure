@@ -35,6 +35,7 @@ module Threading =
     let canceled (cToken: CancellationToken) = cToken.IsCancellationRequested
     let notCanceled (cToken: CancellationToken) = not <| cToken.IsCancellationRequested
 
+[<RequireQualifiedAccessAttribute>]
 module Seq =
     /// <summary>
     /// Reduces a sequence of results into a single result. If any of the results is an error, the whole result is an error.
@@ -59,7 +60,7 @@ module Seq =
         | items, [] -> Ok items
         | _, errors -> Error errors
 
-
+[<RequireQualifiedAccessAttribute>]
 module Graph =
     open Domain.Graph
 
@@ -82,6 +83,7 @@ module Graph =
         innerLoop nodeName None node
 
 module SerDe =
+    [<RequireQualifiedAccessAttribute>]
     module Json =
         open System.Text.Json
 
@@ -152,6 +154,7 @@ module SerDe =
             with ex ->
                 Error <| Serialization ex.Message
 
+[<RequireQualifiedAccessAttribute>]
 module ResultAsync =
     let wrap f =
         function
@@ -200,38 +203,37 @@ module CE =
 
     let resultAsync = ResultAsyncBuilder()
 
-module private CETest =
-    type WorkflowBuilder() =
-        member _.Bind(m, f) = Option.bind f m
-        member _.Return(m) = Some m
+//module private CETest =
+    // type WorkflowBuilder() =
+    //     member _.Bind(m, f) = Option.bind f m
+    //     member _.Return(m) = Some m
 
-    let strToInt (s: string) =
-        match Int32.TryParse s with
-        | true, i -> Some i
-        | _ -> None
+    // let strToInt (s: string) =
+    //     match Int32.TryParse s with
+    //     | true, i -> Some i
+    //     | _ -> None
 
-    let maybe = WorkflowBuilder()
+    // let maybe = WorkflowBuilder()
 
-    let strWorkflow (data: string array) =
-        maybe {
+    // let strWorkflow (data: string array) =
+    //     maybe {
 
-            let! a = strToInt data[0]
-            printfn $"a: %d{a}"
-            let! b = strToInt data[1]
-            let! c = strToInt data[2]
-            return a + b + c
-        }
+    //         let! a = strToInt data[0]
+    //         let! b = strToInt data[1]
+    //         let! c = strToInt data[2]
+    //         return a + b + c
+    //     }
 
-    let good = strWorkflow [| "1"; "2"; "3" |]
-    let bad = strWorkflow [| "1"; "a"; "2" |]
+    // let good = strWorkflow [| "1"; "2"; "3" |]
+    // let bad = strWorkflow [| "1"; "a"; "2" |]
 
 
-    let private (>>=) m f = Option.bind f m
+    //let private (>>=) m f = Option.bind f m
 
-    let strAdd str i =
-        match strToInt str with
-        | Some x -> Some(x + i)
-        | None -> None
+    //let strAdd str i =
+    //    match strToInt str with
+    //    | Some x -> Some(x + i)
+    //    | None -> None
 
-    let good' = strToInt "1" >>= strAdd "2" >>= strAdd "3"
-    let bad' = strToInt "1" >>= strAdd "a" >>= strAdd "2"
+    // let good' = strToInt "1" >>= strAdd "2" >>= strAdd "3"
+    // let bad' = strToInt "1" >>= strAdd "a" >>= strAdd "2"

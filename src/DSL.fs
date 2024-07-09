@@ -104,7 +104,7 @@ module SerDe =
             try
                 Ok <| JsonSerializer.Serialize data
             with ex ->
-                Error <| Serialization ex.Message
+                Error <| NotSupported ex.Message
 
         let serialize' optionsType data =
 
@@ -116,13 +116,13 @@ module SerDe =
             try
                 Ok <| JsonSerializer.Serialize(data, options)
             with ex ->
-                Error <| Serialization ex.Message
+                Error <| NotSupported ex.Message
 
         let deserialize<'a> (data: string) =
             try
                 Ok <| JsonSerializer.Deserialize<'a> data
             with ex ->
-                Error <| Serialization ex.Message
+                Error <| NotSupported ex.Message
 
         let deserialize'<'a> optionsType (data: string) =
 
@@ -134,7 +134,7 @@ module SerDe =
             try
                 Ok <| JsonSerializer.Deserialize<'a>(data, options)
             with ex ->
-                Error <| Serialization ex.Message
+                Error <| NotSupported ex.Message
 
     module Yaml =
         open YamlDotNet.Serialization
@@ -146,13 +146,13 @@ module SerDe =
             try
                 Ok <| serializer.Serialize data
             with ex ->
-                Error <| Serialization ex.Message
+                Error <| NotSupported ex.Message
 
         let deserialize<'a> (data: string) =
             try
                 Ok <| deserializer.Deserialize<'a> data
             with ex ->
-                Error <| Serialization ex.Message
+                Error <| NotSupported ex.Message
 
 [<RequireQualifiedAccessAttribute>]
 module ResultAsync =

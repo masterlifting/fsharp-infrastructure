@@ -134,7 +134,7 @@ let getEnvVar key =
            | IsString value -> Some value
            | _ -> None
     with ex ->
-        Error <| Configuration ex.Message
+        Error <| NotFound ex.Message
 
 /// <summary>
 /// Get environment variable from a configuration file first, then from environment variables.

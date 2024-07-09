@@ -2,36 +2,33 @@
 
 module Errors =
 
-    type ErrorReason = { Message: string; Code: int option }
+    type ErrorReason =
+        { Message: string; Code: string option }
 
     type Error' =
-        | Web of ErrorReason
-        | Persistence of string
-        | Parsing of string
-        | Mapping of string
-        | Serialization of string
-        | Configuration of string
-        | Business of string
+        | Operation of ErrorReason
+        | Permission of ErrorReason
+        | AlreadyExists of string
         | NotFound of string
         | NotSupported of string
         | NotImplemented of string
-        | Denied of string
         | Cancelled of string
 
         member this.Message =
             match this with
-            | Web error -> $"Web. {error}"
-            | Persistence error -> $"Persistence. {error}"
-            | Parsing error -> $"Parsing. {error}"
-            | Mapping error -> $"Mapping. {error}"
-            | Serialization error -> $"Serialization. {error}"
-            | Configuration error -> $"Configuration. {error}"
-            | Business error -> $"Business. {error}"
-            | NotSupported source -> $"The '{source}' not supported."
-            | NotImplemented source -> $"The '{source}' not implemented."
-            | NotFound source -> $"The '{source}' not found."
-            | Denied source -> $"The '{source}' denied."
-            | Cancelled source -> $"The '{source}' task cancelled."
+            | Operation error ->
+                match error.Code with
+                | Some code -> $"Code: {code}; Operation error: {error.Message} "
+                | None -> $"Operation error: {error.Message}"
+            | Permission error ->
+                match error.Code with
+                | Some code -> $"Code: {code}; Permission error: {error.Message}"
+                | None -> $"Permission error: {error.Message}"
+            | AlreadyExists msg -> $"Already exists: {msg}"
+            | NotFound msg -> $"Not found: {msg}"
+            | NotSupported msg -> $"Not supported: {msg}"
+            | NotImplemented source -> $"Not implemented: {source}"
+            | Cancelled source -> $"Cancelled: {source}"
 
 module Graph =
 

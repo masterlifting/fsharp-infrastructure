@@ -8,7 +8,6 @@ module Errors =
     type Error' =
         | Operation of ErrorReason
         | Permission of ErrorReason
-        | AlreadyExists of string
         | NotFound of string
         | NotSupported of string
         | NotImplemented of string
@@ -24,7 +23,6 @@ module Errors =
                 match error.Code with
                 | Some code -> $"Code: {code}; Permission error: {error.Message}"
                 | None -> $"Permission error: {error.Message}"
-            | AlreadyExists msg -> $"Already exists: {msg}"
             | NotFound msg -> $"Not found: {msg}"
             | NotSupported msg -> $"Not supported: {msg}"
             | NotImplemented source -> $"Not implemented: {source}"

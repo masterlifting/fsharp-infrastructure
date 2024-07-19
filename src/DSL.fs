@@ -35,7 +35,7 @@ module Threading =
     let canceled (cToken: CancellationToken) = cToken.IsCancellationRequested
     let notCanceled (cToken: CancellationToken) = not <| cToken.IsCancellationRequested
 
-[<RequireQualifiedAccessAttribute>]
+[<RequireQualifiedAccess>]
 module Seq =
     /// <summary>
     /// Reduces a sequence of results into a single result. If any of the results is an error, the whole result is an error.
@@ -60,7 +60,7 @@ module Seq =
         | items, [] -> Ok items
         | _, errors -> Error errors
 
-[<RequireQualifiedAccessAttribute>]
+[<RequireQualifiedAccess>]
 module Graph =
     open Domain.Graph
 
@@ -83,7 +83,7 @@ module Graph =
         innerLoop nodeName None node
 
 module SerDe =
-    [<RequireQualifiedAccessAttribute>]
+    [<RequireQualifiedAccess>]
     module Json =
         open System.Text.Json
 
@@ -154,7 +154,7 @@ module SerDe =
             with ex ->
                 Error <| NotSupported ex.Message
 
-[<RequireQualifiedAccessAttribute>]
+[<RequireQualifiedAccess>]
 module ResultAsync =
     let wrap f =
         function

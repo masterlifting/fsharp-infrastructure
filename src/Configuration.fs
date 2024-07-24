@@ -2,8 +2,6 @@ module Infrastructure.Configuration
 
 open System
 open Microsoft.Extensions.Configuration
-open Infrastructure.Domain.Errors
-open Infrastructure.DSL.AP
 
 type File =
     | Json of string
@@ -14,17 +12,17 @@ module private Yaml =
     open System.Collections.Generic
     open Microsoft.Extensions.FileProviders
 
-    type YamlConfigurationSource() =
+    type ConfigurationSource() =
         inherit FileConfigurationSource()
 
         override this.Build(builder) =
             match this.FileProvider with
             | null ->
                 this.FileProvider <- builder.GetFileProvider()
-                new YamlConfigurationProvider(this)
-            | _ -> new YamlConfigurationProvider(this)
+                new ConfigurationProvider(this)
+            | _ -> new ConfigurationProvider(this)
 
-    and YamlConfigurationProvider(source) =
+    and ConfigurationProvider(source) =
         inherit FileConfigurationProvider(source)
 
         let deserializer = YamlDotNet.Serialization.DeserializerBuilder().Build()
@@ -62,7 +60,7 @@ module private Yaml =
 
             this.Data <- yaml |> toData
 
-    let addYamlFileWithOptions
+    let addFileWithOptions
         (builder: IConfigurationBuilder)
         (provider: IFileProvider)
         (path: string)
@@ -79,7 +77,7 @@ module private Yaml =
             | _ -> provider, path
 
         let source =
-            YamlConfigurationSource(
+            ConfigurationSource(
                 FileProvider = provider,
                 Path = path,
                 Optional = optional,
@@ -88,8 +86,8 @@ module private Yaml =
 
         builder.Add <| source
 
-    let AddYamlFile builder path =
-        addYamlFileWithOptions builder null path false false
+    let addFile builder path =
+        addFileWithOptions builder null path false false
 
 let private getJsonConfiguration fileName =
     let file = $"{fileName}.json"
@@ -98,12 +96,10 @@ let private getJsonConfiguration fileName =
         .AddJsonFile(file, optional = false, reloadOnChange = true)
         .Build()
 
-open Yaml
-
 let private getYamlConfiguration fileName =
     let file = $"{fileName}.yaml"
     let builder = ConfigurationBuilder()
-    let builder = builder |> AddYamlFile <| file
+    let builder = builder |> Yaml.addFile <| file
     builder.Build()
 
 ///<summary>
@@ -131,7 +127,7 @@ let getEnvVar key =
     try
         Ok
         <| match Environment.GetEnvironmentVariable(key) with
-           | IsString value -> Some value
+           | AP.IsString value -> Some value
            | _ -> None
     with ex ->
         Error <| NotFound ex.Message

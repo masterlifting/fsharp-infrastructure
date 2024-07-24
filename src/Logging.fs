@@ -1,3 +1,4 @@
+[<AutoOpen>]
 module Infrastructure.Logging
 
 type private Provider =
@@ -138,7 +139,7 @@ let private logProcessor =
 open Infrastructure.Configuration
 
 [<Literal>]
-let sectionName = "Logging:LogLevel:Default"
+let private sectionName = "Logging:LogLevel:Default"
 
 let useConsole configuration =
     configuration |> getSection<string> sectionName |> configLogger Console

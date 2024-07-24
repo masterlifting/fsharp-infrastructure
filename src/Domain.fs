@@ -1,5 +1,7 @@
-﻿module Infrastructure.Domain
+﻿[<AutoOpen>]
+module Infrastructure.Domain
 
+[<AutoOpen>]
 module Errors =
 
     type ErrorReason =

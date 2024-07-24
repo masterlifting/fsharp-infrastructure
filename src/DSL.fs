@@ -1,9 +1,11 @@
+[<AutoOpen>]
 module Infrastructure.DSL
 
 open Infrastructure.Domain.Errors
 
 open System
 
+[<RequireQualifiedAccess>]
 module AP =
     let (|IsString|_|) (input: string) =
         match String.IsNullOrWhiteSpace input with
@@ -30,6 +32,7 @@ module AP =
         | true -> Some input
         | _ -> None
 
+[<AutoOpen>]
 module Threading =
     open System.Threading
     let canceled (cToken: CancellationToken) = cToken.IsCancellationRequested
@@ -82,6 +85,7 @@ module Graph =
 
         innerLoop nodeName None node
 
+[<AutoOpen>]
 module SerDe =
     [<RequireQualifiedAccess>]
     module Json =
@@ -135,7 +139,8 @@ module SerDe =
                 Ok <| JsonSerializer.Deserialize<'a>(data, options)
             with ex ->
                 Error <| NotSupported ex.Message
-
+    
+    [<RequireQualifiedAccess>]
     module Yaml =
         open YamlDotNet.Serialization
 
@@ -196,44 +201,10 @@ module ResultAsync =
             return Result.mapError f result
         }
 
+[<AutoOpen>]
 module CE =
     type ResultAsyncBuilder() =
         member _.Bind(m, f) = ResultAsync.bind' f m
         member _.Return(m) = ResultAsync.map' id m
 
     let resultAsync = ResultAsyncBuilder()
-
-//module private CETest =
-    // type WorkflowBuilder() =
-    //     member _.Bind(m, f) = Option.bind f m
-    //     member _.Return(m) = Some m
-
-    // let strToInt (s: string) =
-    //     match Int32.TryParse s with
-    //     | true, i -> Some i
-    //     | _ -> None
-
-    // let maybe = WorkflowBuilder()
-
-    // let strWorkflow (data: string array) =
-    //     maybe {
-
-    //         let! a = strToInt data[0]
-    //         let! b = strToInt data[1]
-    //         let! c = strToInt data[2]
-    //         return a + b + c
-    //     }
-
-    // let good = strWorkflow [| "1"; "2"; "3" |]
-    // let bad = strWorkflow [| "1"; "a"; "2" |]
-
-
-    //let private (>>=) m f = Option.bind f m
-
-    //let strAdd str i =
-    //    match strToInt str with
-    //    | Some x -> Some(x + i)
-    //    | None -> None
-
-    // let good' = strToInt "1" >>= strAdd "2" >>= strAdd "3"
-    // let bad' = strToInt "1" >>= strAdd "a" >>= strAdd "2"

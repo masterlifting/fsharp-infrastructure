@@ -88,16 +88,16 @@ let private configLogger provider logLevel =
         System.Console.OutputEncoding <- System.Text.Encoding.UTF8
         
         let logMessage createMessage =
-            createMessage <| System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") |> printfn
+            createMessage <| System.DateTime.Now.ToString("MM-dd HH:mm:ss") |> printfn
 
         let log level message =
             match level with
-            | Error -> logMessage <| fun timeStamp -> $"\u001b[31m[%s{timeStamp}] %s{message}\u001b[0m"
-            | Warning -> logMessage <| fun timeStamp -> $"\u001b[33m[%s{timeStamp}]\u001b[0m %s{message}"
-            | Debug -> logMessage <| fun timeStamp -> $"\u001b[35m[%s{timeStamp}]\u001b[0m %s{message}"
-            | Trace -> logMessage <| fun timeStamp -> $"\u001b[90m[%s{timeStamp}]\u001b[0m %s{message}"
-            | Success -> logMessage <| fun timeStamp -> $"\u001b[32m[%s{timeStamp}] %s{message}\u001b[0m"
-            | _ -> logMessage <| fun timeStamp -> $"\u001b[36m[%s{timeStamp}]\u001b[0m %s{message}"
+            | Error -> logMessage <| fun timeStamp -> $"\u001b[31m[ERR %s{timeStamp}] %s{message}\u001b[0m"
+            | Warning -> logMessage <| fun timeStamp -> $"\u001b[33m[WRN %s{timeStamp}]\u001b[0m %s{message}"
+            | Debug -> logMessage <| fun timeStamp -> $"\u001b[35m[DBG %s{timeStamp}]\u001b[0m %s{message}"
+            | Trace -> logMessage <| fun timeStamp -> $"\u001b[90m[TRC %s{timeStamp}]\u001b[0m %s{message}"
+            | Success -> logMessage <| fun timeStamp -> $"\u001b[32m[SCS %s{timeStamp}] %s{message}\u001b[0m"
+            | _ -> logMessage <| fun timeStamp -> $"\u001b[36m[INF %s{timeStamp}]\u001b[0m %s{message}"
 
         logger <- Some(create level log)
 

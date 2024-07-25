@@ -1,5 +1,6 @@
-[<AutoOpen>]
 module Infrastructure.Logging
+
+open Infrastructure.Configuration
 
 type private Provider =
     | Console
@@ -87,36 +88,48 @@ let private configLogger provider logLevel =
     | Console ->
 
         System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-        
+
         let logMessage createMessage =
             createMessage <| System.DateTime.Now.ToString("MM-dd HH:mm:ss") |> printfn
 
         let log level message =
             match level with
-            | Error -> logMessage <| fun timeStamp -> $"\u001b[31m[ERR %s{timeStamp}] %s{message}\u001b[0m"
-            | Warning -> logMessage <| fun timeStamp -> $"\u001b[33m[WRN %s{timeStamp}]\u001b[0m %s{message}"
-            | Debug -> logMessage <| fun timeStamp -> $"\u001b[35m[DBG %s{timeStamp}]\u001b[0m %s{message}"
-            | Trace -> logMessage <| fun timeStamp -> $"\u001b[90m[TRC %s{timeStamp}]\u001b[0m %s{message}"
-            | Success -> logMessage <| fun timeStamp -> $"\u001b[32m[SCS %s{timeStamp}] %s{message}\u001b[0m"
-            | _ -> logMessage <| fun timeStamp -> $"\u001b[36m[INF %s{timeStamp}]\u001b[0m %s{message}"
+            | Error ->
+                logMessage
+                <| fun timeStamp -> $"\u001b[31m[ERR %s{timeStamp}] %s{message}\u001b[0m"
+            | Warning ->
+                logMessage
+                <| fun timeStamp -> $"\u001b[33m[WRN %s{timeStamp}]\u001b[0m %s{message}"
+            | Debug ->
+                logMessage
+                <| fun timeStamp -> $"\u001b[35m[DBG %s{timeStamp}]\u001b[0m %s{message}"
+            | Trace ->
+                logMessage
+                <| fun timeStamp -> $"\u001b[90m[TRC %s{timeStamp}]\u001b[0m %s{message}"
+            | Success ->
+                logMessage
+                <| fun timeStamp -> $"\u001b[32m[SCS %s{timeStamp}] %s{message}\u001b[0m"
+            | _ ->
+                logMessage
+                <| fun timeStamp -> $"\u001b[36m[INF %s{timeStamp}]\u001b[0m %s{message}"
 
         logger <- Some(create level log)
 
     | File ->
 
         let logMessage createMessage =
-            let message = createMessage <| System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+            let message = createMessage <| System.DateTime.Now.ToString("MM-dd HH:mm:ss")
 
             System.IO.File.AppendAllText("log.txt", message + System.Environment.NewLine)
 
         let log level message =
             match level with
-            | Error -> logMessage <| fun timeStamp -> $"Error [%s{timeStamp}] %s{message}"
-            | Warning -> logMessage <| fun timeStamp -> $"Warning [%s{timeStamp}] %s{message}"
-            | Debug -> logMessage <| fun timeStamp -> $"Debug [%s{timeStamp}] %s{message}"
-            | Trace -> logMessage <| fun timeStamp -> $"Trace [%s{timeStamp}] %s{message}"
-            | Success -> logMessage <| fun timeStamp -> $"Success [%s{timeStamp}] %s{message}"
-            | _ -> logMessage <| fun timeStamp -> $"Info [%s{timeStamp}] %s{message}"
+            | Error -> logMessage <| fun timeStamp -> $"[ERR %s{timeStamp}] %s{message}"
+            | Warning -> logMessage <| fun timeStamp -> $"[WRN %s{timeStamp}] %s{message}"
+            | Debug -> logMessage <| fun timeStamp -> $"[DBG %s{timeStamp}] %s{message}"
+            | Trace -> logMessage <| fun timeStamp -> $"[TRC %s{timeStamp}] %s{message}"
+            | Success -> logMessage <| fun timeStamp -> $"[SCS %s{timeStamp}] %s{message}"
+            | _ -> logMessage <| fun timeStamp -> $"[INF %s{timeStamp}] %s{message}"
 
         logger <- Some(create level log)
 
@@ -136,7 +149,7 @@ let private logProcessor =
 
         innerLoop ())
 
-open Infrastructure.Configuration
+
 
 [<Literal>]
 let private sectionName = "Logging:LogLevel:Default"

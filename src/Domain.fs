@@ -49,3 +49,17 @@ module Graph =
         member this.Children =
             match this with
             | Node(_, children) -> children
+
+module Parser =
+    module Html =
+        open HtmlAgilityPack
+
+        type Page = HtmlDocument
+        type Node = HtmlNode
+
+[<AutoOpen>]
+module SerDe =
+    module Json =
+        type OptionType =
+            | WebApi
+            | Standard

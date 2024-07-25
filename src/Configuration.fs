@@ -3,10 +3,6 @@ module Infrastructure.Configuration
 open System
 open Microsoft.Extensions.Configuration
 
-type File =
-    | Json of string
-    | Yaml of string
-
 module private Yaml =
     open System.IO
     open System.Collections.Generic
@@ -102,16 +98,8 @@ let private getYamlConfiguration fileName =
     let builder = builder |> Yaml.addFile <| file
     builder.Build()
 
-///<summary>
-/// Get configuration from a file
-/// </summary>
-/// <param name="fileType">File type</param>
-/// <returns>IConfigurationRoot</returns>
-/// <exception cref="Exception">Configuration exception</exception>
-let get fileType =
-    match fileType with
-    | Json file -> getJsonConfiguration file
-    | Yaml file -> getYamlConfiguration file
+let getYaml = getYamlConfiguration
+let getJson = getJsonConfiguration
 
 let getSection<'a> sectionName (configuration: IConfigurationRoot) =
     configuration.GetSection(sectionName)

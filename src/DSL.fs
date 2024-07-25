@@ -1,8 +1,6 @@
 [<AutoOpen>]
 module Infrastructure.DSL
 
-open Infrastructure.Domain.Errors
-
 open System
 
 [<RequireQualifiedAccess>]
@@ -84,80 +82,6 @@ module Graph =
             | _ -> nodeChildren |> List.tryPick (innerLoop targetName (Some nodeName))
 
         innerLoop nodeName None node
-
-[<AutoOpen>]
-module SerDe =
-    [<RequireQualifiedAccess>]
-    module Json =
-        open System.Text.Json
-
-        let private getWebApiOptions () =
-            let options = JsonSerializerOptions()
-            options.PropertyNamingPolicy <- JsonNamingPolicy.CamelCase
-            options
-
-        let private getStandardOptions () =
-            let options = JsonSerializerOptions()
-            options
-
-        type OptionType =
-            | WebApi
-            | Standard
-
-        let serialize data =
-            try
-                Ok <| JsonSerializer.Serialize data
-            with ex ->
-                Error <| NotSupported ex.Message
-
-        let serialize' optionsType data =
-
-            let options =
-                match optionsType with
-                | OptionType.WebApi -> getWebApiOptions ()
-                | OptionType.Standard -> getStandardOptions ()
-
-            try
-                Ok <| JsonSerializer.Serialize(data, options)
-            with ex ->
-                Error <| NotSupported ex.Message
-
-        let deserialize<'a> (data: string) =
-            try
-                Ok <| JsonSerializer.Deserialize<'a> data
-            with ex ->
-                Error <| NotSupported ex.Message
-
-        let deserialize'<'a> optionsType (data: string) =
-
-            let options =
-                match optionsType with
-                | OptionType.WebApi -> getWebApiOptions ()
-                | OptionType.Standard -> getStandardOptions ()
-
-            try
-                Ok <| JsonSerializer.Deserialize<'a>(data, options)
-            with ex ->
-                Error <| NotSupported ex.Message
-    
-    [<RequireQualifiedAccess>]
-    module Yaml =
-        open YamlDotNet.Serialization
-
-        let private serializer = SerializerBuilder().Build()
-        let private deserializer = DeserializerBuilder().Build()
-
-        let serialize data =
-            try
-                Ok <| serializer.Serialize data
-            with ex ->
-                Error <| NotSupported ex.Message
-
-        let deserialize<'a> (data: string) =
-            try
-                Ok <| deserializer.Deserialize<'a> data
-            with ex ->
-                Error <| NotSupported ex.Message
 
 [<RequireQualifiedAccess>]
 module ResultAsync =

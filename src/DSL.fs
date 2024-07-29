@@ -62,6 +62,11 @@ module Seq =
         | _, errors -> Error errors
 
 [<RequireQualifiedAccess>]
+module Map =
+    let combine (map1: Map<'k, 'v>) (map2: Map<'k, 'v>) =
+        map2 |> Map.fold (fun acc key value -> acc |> Map.add key value) map1
+
+[<RequireQualifiedAccess>]
 module Graph =
     open Domain.Graph
 

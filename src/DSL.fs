@@ -130,6 +130,14 @@ module ResultAsync =
             return Result.mapError f result
         }
 
+[<RequireQualifiedAccess>]
+module Exception =
+    let toMessage (ex: exn) =
+        ex.InnerException
+        |> Option.ofObj
+        |> Option.map (_.Message)
+        |> Option.defaultValue ex.Message
+
 [<AutoOpen>]
 module CE =
     type ResultAsyncBuilder() =

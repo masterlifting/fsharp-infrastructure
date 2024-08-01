@@ -30,6 +30,7 @@ module Errors =
             | NotImplemented source -> $"Not implemented: {source}"
             | Cancelled source -> $"Cancelled: {source}"
 
+[<RequireQualifiedAccess>]
 module Graph =
 
     type INodeName =

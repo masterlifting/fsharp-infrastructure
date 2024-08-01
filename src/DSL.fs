@@ -68,16 +68,16 @@ module Map =
 
 [<RequireQualifiedAccess>]
 module Graph =
-    open Domain.Graph
+    open Domain
 
     let buildNodeName parentName nodeName =
         match parentName with
         | None -> nodeName
         | Some parentName -> $"{parentName}.{nodeName}"
 
-    let findNode<'a when 'a :> INodeName> nodeName (node: Node<'a>) =
+    let findNode<'a when 'a :> Graph.INodeName> nodeName (node: Graph.Node<'a>) =
 
-        let rec innerLoop targetName nodeName (node: Node<'a>) =
+        let rec innerLoop targetName nodeName (node: Graph.Node<'a>) =
             let nodeValue, nodeChildren = node.Deconstructed
 
             let nodeName = nodeName |> buildNodeName <| nodeValue.Name

@@ -137,6 +137,19 @@ module Exception =
         |> Option.ofObj
         |> Option.map (_.Message)
         |> Option.defaultValue ex.Message
+        
+[<RequireQualifiedAccess>]
+module Reflection =
+    open Microsoft.FSharp.Reflection
+    let getUnionCases<'a> () =
+        try
+            let result =
+                FSharpType.GetUnionCases(typeof<'a>)
+                |> Array.map (fun case -> FSharpValue.MakeUnion(case, [||]) :?> 'a)
+            Ok result
+        with ex ->
+            let message = ex |> Exception.toMessage
+            Error <| Operation { Message = message; Code = None }
 
 [<AutoOpen>]
 module CE =

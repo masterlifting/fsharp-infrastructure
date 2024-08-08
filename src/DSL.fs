@@ -141,12 +141,22 @@ module Exception =
 [<RequireQualifiedAccess>]
 module Reflection =
     open Microsoft.FSharp.Reflection
+    let private _cache = Collections.Concurrent.ConcurrentDictionary<string, obj>()
+
+    let private getUnionCases'<'a> type' =
+        FSharpType.GetUnionCases(type')
+        |> Array.map (fun case -> FSharpValue.MakeUnion(case, [||]) :?> 'a)
+
     let getUnionCases<'a> () =
         try
-            let result =
-                FSharpType.GetUnionCases(typeof<'a>)
-                |> Array.map (fun case -> FSharpValue.MakeUnion(case, [||]) :?> 'a)
-            Ok result
+            let type' = typeof<'a> 
+            match _cache.TryGetValue(type'.FullName) with
+            | true, unions -> 
+                unions :?> 'a[] |> Ok
+            | _ ->
+                let cases = type' |> getUnionCases'<'a>
+                _cache.TryAdd(type'.FullName, cases) |> ignore
+                cases |> Ok
         with ex ->
             let message = ex |> Exception.toMessage
             Error <| Operation { Message = message; Code = None }

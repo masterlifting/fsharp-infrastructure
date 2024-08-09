@@ -138,29 +138,6 @@ module Exception =
         |> Option.map (_.Message)
         |> Option.defaultValue ex.Message
 
-[<RequireQualifiedAccess>]
-module Reflection =
-    open Microsoft.FSharp.Reflection
-    let private _cache = Collections.Concurrent.ConcurrentDictionary<string, obj>()
-
-    let private getUnionCases' type' =
-        FSharpType.GetUnionCases(type')
-        |> Array.map (fun case -> FSharpValue.MakeUnion(case, [||]))
-
-    let getUnionCases<'a> () =
-      try
-            let type' = typeof<'a>
-            let cases = 
-                _cache.GetOrAdd(type'.FullName, fun _ ->
-                    type'
-                    |> getUnionCases'
-                    |> Array.map (fun case -> case :?> 'a))
-
-            cases |> Ok
-        with ex ->
-            let message = ex |> Exception.toMessage
-            Error <| Operation { Message = message; Code = Some "getUnionCases" }
-
 [<AutoOpen>]
 module CE =
     type ResultAsyncBuilder() =

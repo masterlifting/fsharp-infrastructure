@@ -72,37 +72,41 @@ module Json =
             override _.Read(reader: byref<Utf8JsonReader>, typeToConvert: Type, options: JsonSerializerOptions) =
                 if reader.TokenType <> JsonTokenType.StartObject then
                     raise <| JsonException("Expected StartObject")
+                
+                match reader.TokenType with
+                | JsonTokenType.StartObject ->
+                    let errorType = ref ""
+                    let errorReason = ref ""
+                    let errorMessage = ref ""
 
-                let mutable errorType = ""
-                let mutable errorReason: ErrorReason option = None
-                let mutable errorMessage = ""
+                    while reader.Read() do
+                        match reader.TokenType with
+                        | JsonTokenType.PropertyName ->
+                            let propertyName = reader.GetString()
+                            reader.Read() |> ignore
 
-                while reader.Read() && reader.TokenType <> JsonTokenType.EndObject do
-                    match reader.TokenType with
-                    | JsonTokenType.PropertyName ->
-                        let propertyName = reader.GetString()
-                        reader.Read() |> ignore
-                        match propertyName with
-                        | ErrorType -> errorType <- reader.GetString()
-                        | ErrorReason -> errorReason <- JsonSerializer.Deserialize<ErrorReason>(reader.GetString(), options) |> Some
-                        | ErrorMessage -> errorMessage <- reader.GetString()
+                            match propertyName with
+                            | ErrorType -> errorType := reader.GetString()
+                            | ErrorReason -> errorReason := reader.GetString()
+                            | ErrorMessage -> errorMessage := reader.GetString()
+                            | _ -> ()
                         | _ -> reader.Skip()
-                    | _ -> reader.Skip()
 
-                match errorType with
-                | OperationError -> 
-                    match errorReason with
-                    | Some reason -> Operation reason
-                    | None -> raise <| JsonException("Missing Reason for Operation Error")
-                | PermissionError ->
-                    match errorReason with
-                    | Some reason -> Permission reason
-                    | None -> raise <| JsonException("Missing Reason for Permission Error")
-                | NotFoundError -> NotFound errorMessage
-                | NotSupportedError -> NotSupported errorMessage
-                | NotImplementedError -> NotImplemented errorMessage
-                | CancelledError -> Cancelled errorMessage
-                | _ -> raise <| JsonException($"Unknown Error type: {errorType}")
+                    match !errorType with
+                    | OperationError ->
+                        Operation !errorReason
+                    | PermissionError ->
+                        Permission !errorReason
+                    | NotFoundError ->
+                        NotFound !errorMessage
+                    | NotSupportedError ->
+                        NotSupported !errorMessage
+                    | NotImplementedError ->
+                        NotImplemented !errorMessage
+                    | CancelledError ->
+                        Cancelled !errorMessage
+                    | _ -> raise <| JsonException($"Unexpected error type '{!errorType}'.")
+                | _ -> raise <| JsonException("Expected StartObject")
 
     let private getWebApiOptions () =
         let options = JsonSerializerOptions()

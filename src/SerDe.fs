@@ -29,6 +29,10 @@ module Json =
             match optionsType with
             | WebApi -> getWebApiOptions ()
             | Standard -> getStandardOptions ()
+            | DU converter -> 
+                let options = getStandardOptions ()
+                options.Converters.Add converter
+                options
 
         try
             Ok <| JsonSerializer.Serialize(data, options)
@@ -47,6 +51,10 @@ module Json =
             match optionsType with
             | WebApi -> getWebApiOptions ()
             | Standard -> getStandardOptions ()
+            | DU converter -> 
+                let options = getStandardOptions ()
+                options.Converters.Add converter
+                options
 
         try
             Ok <| JsonSerializer.Deserialize<'a>(data, options)

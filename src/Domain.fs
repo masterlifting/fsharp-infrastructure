@@ -61,6 +61,9 @@ module Parser =
 [<AutoOpen>]
 module SerDe =
     module Json =
+        open System.Text.Json
+        
         type OptionType =
             | WebApi
             | Standard
+            | DU of Serialization.JsonConverter

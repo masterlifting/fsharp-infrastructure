@@ -1,7 +1,6 @@
 ﻿[<AutoOpen>]
 module Infrastructure.SerDe
 
-open System
 open Infrastructure
 
 [<RequireQualifiedAccess>]

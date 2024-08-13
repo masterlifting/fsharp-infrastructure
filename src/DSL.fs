@@ -65,6 +65,9 @@ module Seq =
 module Map =
     let combine (map1: Map<'k, 'v>) (map2: Map<'k, 'v>) =
         map2 |> Map.fold (fun acc key value -> acc |> Map.add key value) map1
+        
+    let removeKeys (keys: 'k list) (map: Map<'k, 'v>) =
+        keys |> List.fold (fun acc key -> acc |> Map.remove key) map
 
 [<RequireQualifiedAccess>]
 module Graph =
@@ -129,7 +132,7 @@ module ResultAsync =
             let! result = asyncResult
             return Result.mapError f result
         }
-
+        
 [<RequireQualifiedAccess>]
 module Exception =
     let toMessage (ex: exn) =

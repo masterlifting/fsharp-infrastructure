@@ -76,7 +76,7 @@ module Graph =
     let buildNodeName parentName nodeName =
         match parentName with
         | None -> nodeName
-        | Some parentName -> $"{parentName}.{nodeName}"
+        | Some parentName -> $"%s{parentName}.%s{nodeName}"
 
     let findNode<'a when 'a :> Graph.INodeName> nodeName (node: Graph.Node<'a>) =
 

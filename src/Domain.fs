@@ -73,7 +73,6 @@ module SerDe =
 
 module External =
     type Error() =
-
         member val Type: string = System.String.Empty with get, set
         member val Value: string = System.String.Empty with get, set
         member val Code: string option = None with get, set

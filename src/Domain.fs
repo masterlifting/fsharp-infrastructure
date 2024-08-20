@@ -20,14 +20,8 @@ module Errors =
 
         member this.Message =
             match this with
-            | Operation reason ->
-                match reason.Code with
-                | Some code -> $"Operation error: {reason.Message} ({code})"
-                | None -> $"Operation error: {reason.Message}"
-            | Permission reason ->
-                match reason.Code with
-                | Some code -> $"Permission error: {reason.Message} ({code})"
-                | None -> $"Permission error: {reason.Message}"
+            | Operation reason -> $"Operation error: {reason.Message}"
+            | Permission reason -> $"Permission error: {reason.Message}"
             | NotFound src -> $"Not found: {src}"
             | NotSupported src -> $"Not supported: {src}"
             | NotImplemented src -> $"Not implemented: {src}"

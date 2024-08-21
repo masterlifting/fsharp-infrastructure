@@ -151,7 +151,8 @@ let private deserialize<'a> (section: IConfigurationSection) key =
             | None -> None |> box
             | Some value ->
                 let innerType = t.GetGenericArguments().[0]
-                get innerType key |> Some |> box
+                let result = get innerType key |> Option.ofObj
+                result |> box
         | t ->
             let result = t |> Activator.CreateInstance
             let properties = t.GetProperties()

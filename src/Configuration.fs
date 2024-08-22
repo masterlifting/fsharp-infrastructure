@@ -1,9 +1,10 @@
 module Infrastructure.Configuration
 
 open System
+open System.Runtime.CompilerServices
 open Microsoft.Extensions.Configuration
 open Microsoft.FSharp.Reflection
-open System.Collections
+open System.Text.RegularExpressions
 
 module private Yaml =
     open System.IO
@@ -102,81 +103,84 @@ let private getYamlConfiguration fileName =
 let getYaml = getYamlConfiguration
 let getJson = getJsonConfiguration
 
-let private deserialize<'a> (section: IConfigurationSection) key =
-    let resultType = typeof<'a>
+let private get<'a> key (section: IConfigurationSection) =
+    let config =
+        section.AsEnumerable()
+        |> Seq.map (fun x ->
+            if String.IsNullOrEmpty(x.Value) then
+                (x.Key, None)
+            else
+                (x.Key, Some x.Value))
+        |> Map.ofSeq
 
-    let source =
-        section.AsEnumerable() |> Seq.map (fun x -> x.Key, x.Value) |> Map.ofSeq
+    let inline findValue key =
+        config |> Map.tryFind key |> Option.bind id
 
-    let findValue key =
-        match source |> Map.tryFind key with
-        | Some value ->
-            match String.IsNullOrEmpty value with
-            | true -> None
-            | false -> Some value
-        | None -> None
-
-    let rec get (type': Type) key =
+    let rec getValue key type' =
         match type' with
-        | t when t.Name = "String" -> findValue key |> Option.defaultValue null |> box
-        | t when t.IsValueType ->
+        | valueType when valueType = typeof<string> -> findValue key |> Option.defaultValue String.Empty |> box
+        | valueType when valueType.IsValueType ->
             findValue key
-            |> Option.map (fun x -> Convert.ChangeType(x, t))
-            |> Option.defaultValue (Activator.CreateInstance t)
+            |> Option.map (fun x -> Convert.ChangeType(x, valueType))
+            |> Option.defaultValue (RuntimeHelpers.GetUninitializedObject valueType)
             |> box
-        | t when t.IsArray ->
-            let regex = Text.RegularExpressions.Regex($"{key}:(\d+)$")
-            let keys = source.Keys |> Seq.filter regex.IsMatch
+        | valueType when valueType.IsArray ->
+            let regex = Regex($"{key}:(\d+)$")
 
             let indexes =
-                keys
-                |> Seq.map (fun key -> int <| regex.Match(key).Groups.[1].Value)
+                config.Keys
+                |> Seq.choose (fun key ->
+                    let regexMatch = regex.Match key
+
+                    if regexMatch.Success then
+                        Some(regexMatch.Groups[1].Value |> int)
+                    else
+                        None)
                 |> Seq.sort
                 |> Seq.toArray
 
-            let elementType = t.GetElementType()
-
-            let values = indexes |> Array.map (fun index -> get elementType $"{key}:{index}")
-
+            let elementType = valueType.GetElementType()
             let result = Array.CreateInstance(elementType, indexes.Length)
 
-            values |> Array.iteri (fun i value -> result.SetValue(value, i))
+            indexes
+            |> Array.iteri (fun i index ->
+                let value = elementType |> getValue $"{key}:{index}"
+                result.SetValue(value, i))
 
             result |> box
+        | valueType when
+            valueType.IsGenericType
+            && valueType.GetGenericTypeDefinition() = typedefof<Option<_>>
+            ->
+            let regex = Regex($"{key}:\w+$")
 
-        | t when t.IsGenericType && t.Name = "FSharpOption`1" ->
-            let regex = Text.RegularExpressions.Regex($"{key}:\w+$")
-
-            match source.Keys |> Seq.tryFind (regex.IsMatch) with
-            | None -> None |> box
-            | Some value ->
-                let innerType = t.GetGenericArguments().[0]
-                let result = get innerType key |> Option.ofObj
-                result |> box
-        | t ->
-            let result = t |> Activator.CreateInstance
-            let properties = t.GetProperties()
+            config.Keys
+            |> Seq.tryFind regex.IsMatch
+            |> Option.map (fun _ ->
+                let innerType = valueType.GetGenericArguments()[0]
+                let value = innerType |> getValue key
+                FSharpValue.MakeUnion(FSharpType.GetUnionCases(valueType)[1], [| value |]))
+            |> Option.defaultValue None
+            |> box
+        | valueType ->
+            let result = RuntimeHelpers.GetUninitializedObject(valueType)
+            let properties = valueType.GetProperties()
 
             properties
             |> Array.iter (fun prop ->
-                let key = $"{key}:{prop.Name}"
-                let value = get prop.PropertyType key
-
-                try
-                    prop.SetValue(result, value)
-                with ex ->
-                    failwithf "Error setting property %s: %s" prop.Name ex.Message)
+                let value = prop.PropertyType |> getValue $"{key}:{prop.Name}"
+                prop.SetValue(result, value))
 
             result
 
-    get resultType key :?> 'a
+    typeof<'a> |> getValue key :?> 'a
 
 let getSection<'a> sectionName (configuration: IConfigurationRoot) =
     configuration.GetSection(sectionName)
     |> Option.ofObj
     |> Option.bind (fun section ->
         match section.Exists() with
-        | true -> Some <| deserialize<'a> section sectionName
+        | true -> section |> get<'a> sectionName |> Some
         | false -> None)
 
 /// <summary>

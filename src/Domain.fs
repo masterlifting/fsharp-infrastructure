@@ -20,12 +20,12 @@ module Errors =
 
         member this.Message =
             match this with
-            | Operation reason -> $"Operation error: {reason.Message}"
-            | Permission reason -> $"Permission error: {reason.Message}"
-            | NotFound src -> $"Not found: {src}"
-            | NotSupported src -> $"Not supported: {src}"
-            | NotImplemented src -> $"Not implemented: {src}"
-            | Cancelled src -> $"Cancelled: {src}"
+            | Operation reason -> $"Operation error -> {reason.Message}"
+            | Permission reason -> $"Permission error -> {reason.Message}"
+            | NotFound src -> $"Not found -> {src}"
+            | NotSupported src -> $"Not supported -> {src}"
+            | NotImplemented src -> $"Not implemented -> {src}"
+            | Cancelled src -> $"Cancelled -> {src}"
 
 [<RequireQualifiedAccess>]
 module Graph =

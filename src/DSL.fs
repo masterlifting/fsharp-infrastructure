@@ -101,6 +101,12 @@ module Graph =
         innerLoop nodeName None node
 
 [<RequireQualifiedAccess>]
+module Option =
+
+    let toResult f value =
+        Option.map (f >> Result.map Some) value |> Option.defaultValue (Ok None)
+
+[<RequireQualifiedAccess>]
 module ResultAsync =
     let wrap f =
         function

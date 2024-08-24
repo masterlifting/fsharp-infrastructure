@@ -47,7 +47,7 @@ module private Yaml =
                     |> Seq.iteri (fun index element ->
                         let nodeName = nodeName |> buildNodeName <| index.ToString()
                         innerLoop nodeName element)
-                | _ -> result.Add(nodeName, data |> string)
+                | _ -> result.Add(nodeName, data.ToString())
 
             innerLoop "" data
             result
@@ -113,7 +113,7 @@ let private get<'a> key (section: IConfigurationSection) =
                 (x.Key, Some x.Value))
         |> Map.ofSeq
 
-    let inline findValue key =
+    let findValue key =
         config |> Map.tryFind key |> Option.bind id
 
     let rec getValue key type' =

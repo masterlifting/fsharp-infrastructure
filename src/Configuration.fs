@@ -30,9 +30,10 @@ module private Yaml =
             let result = Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 
             let buildNodeName parentName nodeName =
-                match parentName with
-                | "" -> nodeName
-                | _ -> $"{parentName}:{nodeName}"
+                 match parentName with
+                 | "" -> nodeName
+                 | _ when nodeName = "<<" -> parentName
+                 | _ -> $"%s{parentName}:%s{nodeName}"
 
             let rec innerLoop nodeName (data: obj) =
                 match data with
@@ -45,9 +46,9 @@ module private Yaml =
                 | :? List<obj> as list ->
                     list
                     |> Seq.iteri (fun index element ->
-                        let nodeName = nodeName |> buildNodeName <| index.ToString()
+                        let nodeName = nodeName |> buildNodeName <| (index |> string)
                         innerLoop nodeName element)
-                | _ -> result.Add(nodeName, data.ToString())
+                | _ -> result.Add(nodeName, data |> string)
 
             innerLoop "" data
             result
@@ -152,7 +153,7 @@ let private get<'a> key (section: IConfigurationSection) =
             valueType.IsGenericType
             && valueType.GetGenericTypeDefinition() = typedefof<Option<_>>
             ->
-            let regex = Regex($"{key}:\w+$")
+            let regex = Regex($"{key}:?\\w*$")
 
             config.Keys
             |> Seq.tryFind regex.IsMatch

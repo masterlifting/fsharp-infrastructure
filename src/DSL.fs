@@ -61,6 +61,11 @@ module Seq =
         | items, [] -> Ok items
         | _, errors -> Error errors
 
+    let foldi f state source =
+        source
+        |> Seq.mapi (fun i x -> i, x)
+        |> Seq.fold (fun state (i, x) -> f state i x) state
+
 [<RequireQualifiedAccess>]
 module Map =
     let combine (map1: Map<'k, 'v>) (map2: Map<'k, 'v>) =

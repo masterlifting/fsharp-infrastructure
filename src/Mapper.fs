@@ -63,4 +63,4 @@ module Error =
         | NotSupported -> Errors.NotSupported error.Value |> Ok
         | NotImplemented -> Errors.NotImplemented error.Value |> Ok
         | Cancelled -> Errors.Cancelled error.Value |> Ok
-        | _ -> Result.Error <| Errors.NotSupported "Unknown error type"
+        | _ -> Error <| Errors.NotSupported "Unknown error type"

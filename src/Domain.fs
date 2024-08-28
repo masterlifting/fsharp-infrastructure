@@ -8,7 +8,8 @@ module Errors =
         { Message: string
           Code: string option }
 
-        static member buildLine(path, file, line) = $"{path}\\{file}:{line}" |> Some
+        static member buildLine(path, file, line) = $"%s{path}\\%s{file}:%s{line}"
+        static member buildLineOpt = ErrorReason.buildLine >> Some
 
     type Error' =
         | Operation of ErrorReason
@@ -20,12 +21,21 @@ module Errors =
 
         member this.Message =
             match this with
-            | Operation reason -> $"Operation error -> {reason.Message}"
-            | Permission reason -> $"Permission error -> {reason.Message}"
-            | NotFound src -> $"Not found -> {src}"
-            | NotSupported src -> $"Not supported -> {src}"
-            | NotImplemented src -> $"Not implemented -> {src}"
-            | Cancelled src -> $"Cancelled -> {src}"
+            | Operation reason -> $"Operation error -> %s{reason.Message}"
+            | Permission reason -> $"Permission error -> %s{reason.Message}"
+            | NotFound src -> $"Not found -> %s{src}"
+            | NotSupported src -> $"Not supported -> %s{src}"
+            | NotImplemented src -> $"Not implemented -> %s{src}"
+            | Cancelled src -> $"Cancelled -> %s{src}"
+
+        member this.extendMessage msg =
+            match this with
+            | Operation reason -> Operation { reason with Message = $"%s{reason.Message} %s{msg}" }
+            | Permission reason -> Permission { reason with Message = $"%s{reason.Message} %s{msg}" }
+            | NotFound src -> NotFound $"%s{src} %s{msg}"
+            | NotSupported src -> NotSupported $"%s{src} %s{msg}"
+            | NotImplemented src -> NotImplemented $"%s{src} %s{msg}"
+            | Cancelled src -> Cancelled $"%s{src} %s{msg}"
 
 [<RequireQualifiedAccess>]
 module Graph =

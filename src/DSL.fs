@@ -25,6 +25,16 @@ module AP =
         | true, value -> Some value
         | _ -> None
 
+    let (|IsDateOnly|_|) (input: string) =
+        match DateOnly.TryParse input with
+        | true, value -> Some value
+        | _ -> None
+
+    let (|IsTimeOnly|_|) (input: string) =
+        match TimeOnly.TryParse input with
+        | true, value -> Some value
+        | _ -> None
+
     let (|IsLettersOrNumbers|_|) (input: string) =
         match Text.RegularExpressions.Regex.IsMatch(input, "^[a-zA-Z0-9]+$") with
         | true -> Some input
@@ -162,9 +172,24 @@ module Exception =
         |> Option.defaultValue ex.Message
 
 [<AutoOpen>]
+module String =
+    let fromTimeSpan (value: TimeSpan) =
+        let format = "dd\\.hh\\:mm\\:ss"
+        value.ToString(format)
+
+    let fromDateTime (value: DateTime) =
+        let format = "yyyy-MM-dd HH:mm:ss"
+        value.ToString(format)
+
+[<AutoOpen>]
 module CE =
     type ResultAsyncBuilder() =
         member _.Bind(m, f) = ResultAsync.bind' f m
         member _.Return(m) = ResultAsync.map' id m
 
     let resultAsync = ResultAsyncBuilder()
+
+    type ModelBuilder() =
+        member _.Bind(x, f) = Result.bind f x
+        member _.Return x = Ok x
+        member _.ReturnFrom x = x

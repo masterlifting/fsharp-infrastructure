@@ -185,7 +185,8 @@ module String =
 module CE =
     type ResultAsyncBuilder() =
         member _.Bind(m, f) = ResultAsync.bind' f m
-        member _.Return(m) = ResultAsync.map' id m
+        member _.Return m = ResultAsync.map' id m
+        member _.ReturnFrom m = ResultAsync.wrap id m
 
     let resultAsync = ResultAsyncBuilder()
 

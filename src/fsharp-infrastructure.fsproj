@@ -4,8 +4,6 @@
     <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="README.md" />
-    <None Include=".gitignore" />
     <Compile Include="Domain.fs" />
     <Compile Include="Dsl.fs" />
     <Compile Include="SerDe.fs" />

@@ -11,11 +11,11 @@ type private Logger =
       logDebug: string -> unit
       logInfo: string -> unit
       logWarning: string -> unit
-      logError: string -> unit
+      logCritical: string -> unit
       logSuccess: string -> unit }
 
 type private Level =
-    | Error
+    | Critical
     | Warning
     | Information
     | Debug
@@ -28,7 +28,9 @@ let private parseLevel level =
     match level with
     | Some value ->
         match value with
-        | "Error" -> Error
+        | "Error" -> Critical
+        | "Critical" -> Critical
+        | "Warn" -> Warning
         | "Warning" -> Warning
         | "Debug" -> Debug
         | "Trace" -> Trace
@@ -38,48 +40,48 @@ let private parseLevel level =
 
 let private create level log =
     match level with
-    | Error ->
+    | Critical ->
         { logTrace = ignore
           logDebug = ignore
           logInfo = ignore
           logWarning = ignore
           logSuccess = ignore
-          logError = log Error }
+          logCritical = log Critical }
     | Success ->
         { logTrace = ignore
           logDebug = ignore
           logWarning = ignore
           logInfo = ignore
           logSuccess = log Success
-          logError = log Error }
+          logCritical = log Critical }
     | Warning ->
         { logTrace = ignore
           logDebug = ignore
           logInfo = ignore
           logWarning = log Warning
           logSuccess = log Success
-          logError = log Error }
+          logCritical = log Critical }
     | Information ->
         { logTrace = ignore
           logDebug = ignore
           logInfo = log Information
           logWarning = log Warning
           logSuccess = log Success
-          logError = log Error }
+          logCritical = log Critical }
     | Debug ->
         { logTrace = ignore
           logDebug = log Debug
           logInfo = log Information
           logWarning = log Warning
           logSuccess = log Success
-          logError = log Error }
+          logCritical = log Critical }
     | Trace ->
         { logTrace = log Trace
           logDebug = log Debug
           logInfo = log Information
           logWarning = log Warning
           logSuccess = log Success
-          logError = log Error }
+          logCritical = log Critical }
 
 let private configLogger provider logLevel =
     let level = parseLevel logLevel
@@ -94,9 +96,9 @@ let private configLogger provider logLevel =
 
         let log level message =
             match level with
-            | Error ->
+            | Critical ->
                 logMessage
-                <| fun timeStamp -> $"\u001b[31m[ERR %s{timeStamp}] %s{message}\u001b[0m"
+                <| fun timeStamp -> $"\u001b[31m[CRT %s{timeStamp}] %s{message}\u001b[0m"
             | Warning ->
                 logMessage
                 <| fun timeStamp -> $"\u001b[33m[WRN %s{timeStamp}]\u001b[0m %s{message}"
@@ -124,7 +126,7 @@ let private configLogger provider logLevel =
 
         let log level message =
             match level with
-            | Error -> logMessage <| fun timeStamp -> $"[ERR %s{timeStamp}] %s{message}"
+            | Critical -> logMessage <| fun timeStamp -> $"[CRT %s{timeStamp}] %s{message}"
             | Warning -> logMessage <| fun timeStamp -> $"[WRN %s{timeStamp}] %s{message}"
             | Debug -> logMessage <| fun timeStamp -> $"[DBG %s{timeStamp}] %s{message}"
             | Trace -> logMessage <| fun timeStamp -> $"[TRC %s{timeStamp}] %s{message}"
@@ -149,8 +151,6 @@ let private logProcessor =
 
         innerLoop ())
 
-
-
 [<Literal>]
 let private sectionName = "Logging:LogLevel:Default"
 
@@ -174,8 +174,8 @@ module Log =
     let warning msg =
         logProcessor.Post <| fun logger' -> logger'.logWarning msg
 
-    let error msg =
-        logProcessor.Post <| fun logger' -> logger'.logError msg
+    let critical msg =
+        logProcessor.Post <| fun logger' -> logger'.logCritical msg
 
     let success msg =
         logProcessor.Post <| fun logger' -> logger'.logSuccess msg

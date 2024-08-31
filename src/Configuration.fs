@@ -30,10 +30,10 @@ module private Yaml =
             let result = Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 
             let buildNodeName parentName nodeName =
-                 match parentName with
-                 | "" -> nodeName
-                 | _ when nodeName = "<<" -> parentName
-                 | _ -> $"%s{parentName}:%s{nodeName}"
+                match parentName with
+                | "" -> nodeName
+                | _ when nodeName = "<<" -> parentName
+                | _ -> $"%s{parentName}:%s{nodeName}"
 
             let rec innerLoop nodeName (data: obj) =
                 match data with

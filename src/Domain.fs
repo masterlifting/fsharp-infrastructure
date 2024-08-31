@@ -30,8 +30,14 @@ module Errors =
 
         member this.extendMessage msg =
             match this with
-            | Operation reason -> Operation { reason with Message = $"%s{reason.Message} %s{msg}" }
-            | Permission reason -> Permission { reason with Message = $"%s{reason.Message} %s{msg}" }
+            | Operation reason ->
+                Operation
+                    { reason with
+                        Message = $"%s{reason.Message} %s{msg}" }
+            | Permission reason ->
+                Permission
+                    { reason with
+                        Message = $"%s{reason.Message} %s{msg}" }
             | NotFound src -> NotFound $"%s{src} %s{msg}"
             | NotSupported src -> NotSupported $"%s{src} %s{msg}"
             | NotImplemented src -> NotImplemented $"%s{src} %s{msg}"

@@ -76,6 +76,17 @@ module Seq =
         |> Seq.mapi (fun i x -> i, x)
         |> Seq.fold (fun state (i, x) -> f state i x) state
 
+    /// <summary>
+    /// Maps a sequence of results into results and errors and returns a tuple of items and errors
+    /// </summary>
+    let raes data =
+        let map itemRes =
+            match itemRes with
+            | Ok item -> Some item, None
+            | Error error -> None, Some error
+
+        data |> Seq.map map
+
 [<RequireQualifiedAccess>]
 module Map =
     let combine (map1: Map<'k, 'v>) (map2: Map<'k, 'v>) =

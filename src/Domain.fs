@@ -28,7 +28,7 @@ module Errors =
             | NotImplemented src -> $"Not implemented -> %s{src}"
             | Cancelled src -> $"Cancelled -> %s{src}"
 
-        member this.extendMessage msg =
+        member this.extend msg =
             match this with
             | Operation reason ->
                 Operation

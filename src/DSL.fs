@@ -48,10 +48,13 @@ module Threading =
 
 [<RequireQualifiedAccess>]
 module Seq =
-    
+
     let unzip tuples =
         let map (acc1, acc2) (item1, item2) = (item1 :: acc1, item2 :: acc2)
-        tuples |> Seq.fold map ([], []) |> fun (acc1, acc2) -> List.rev acc1, List.rev acc2
+
+        tuples
+        |> Seq.fold map ([], [])
+        |> fun (acc1, acc2) -> List.rev acc1, List.rev acc2
 
 [<RequireQualifiedAccess>]
 module Map =
@@ -72,7 +75,7 @@ module Map =
 
 [<RequireQualifiedAccess>]
 module Result =
-    
+
     /// <summary>
     /// Reduces a sequence of results into a single result. If any of the results is an error, the whole result is an error.
     /// </summary>
@@ -160,8 +163,11 @@ module ResultAsync =
             | Error err -> return Error err
         }
 
-    let mapError f result =
-        async { return Result.mapError f result }
+    let mapError f asyncResult =
+        async {
+            let! result = asyncResult
+            return Result.mapError f result
+        }
 
     let mapError' f asyncResult =
         async {

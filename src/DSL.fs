@@ -48,44 +48,10 @@ module Threading =
 
 [<RequireQualifiedAccess>]
 module Seq =
-    /// <summary>
-    /// Reduces a sequence of results into a single result. If any of the results is an error, the whole result is an error.
-    /// </summary>
-    let roe data =
-        let map state itemRes =
-            state
-            |> Result.bind (fun items -> itemRes |> Result.map (fun item -> item :: items))
-
-        Seq.fold map (Ok []) data |> Result.map List.rev
-
-    /// <summary>
-    /// Reduces a sequence of results into a single result of items or errors
-    /// </summary>
-    let roes data =
-        let map (items, errors) itemRes =
-            match itemRes with
-            | Ok item -> item :: items, errors
-            | Error error -> items, error :: errors
-
-        match Seq.fold map ([], []) data with
-        | items, [] -> Ok items
-        | _, errors -> Error errors
-
-    let foldi f state source =
-        source
-        |> Seq.mapi (fun i x -> i, x)
-        |> Seq.fold (fun state (i, x) -> f state i x) state
-
-    /// <summary>
-    /// Maps a sequence of results into results and errors and returns a tuple of items and errors
-    /// </summary>
-    let raes data =
-        let map itemRes =
-            match itemRes with
-            | Ok item -> Some item, None
-            | Error error -> None, Some error
-
-        data |> Seq.map map
+    
+    let unzip tuples =
+        let map (acc1, acc2) (item1, item2) = (item1 :: acc1, item2 :: acc2)
+        tuples |> Seq.fold map ([], []) |> fun (acc1, acc2) -> List.rev acc1, List.rev acc2
 
 [<RequireQualifiedAccess>]
 module Map =
@@ -103,6 +69,35 @@ module Map =
                 let value' = key :: (acc |> Map.tryFind key' |> Option.defaultValue [])
                 Map.add key' value' acc)
             Map.empty
+
+[<RequireQualifiedAccess>]
+module Result =
+    
+    /// <summary>
+    /// Reduces a sequence of results into a single result. If any of the results is an error, the whole result is an error.
+    /// </summary>
+    let choose data =
+        let map state itemRes =
+            state
+            |> Result.bind (fun items -> itemRes |> Result.map (fun item -> item :: items))
+
+        Seq.fold map (Ok []) data |> Result.map List.rev
+
+    /// <summary>
+    /// Unzips a sequence of results into two sequences: one for the items and one for the errors.
+    /// </summary>
+    let unzip data =
+        let map itemRes =
+            match itemRes with
+            | Ok item -> Some item, None
+            | Error error -> None, Some error
+
+        let choose (items, errors) =
+            let items = items |> Seq.choose id |> Seq.toList
+            let errors = errors |> Seq.choose id |> Seq.toList
+            items, errors
+
+        data |> Seq.map map |> Seq.unzip |> choose
 
 [<RequireQualifiedAccess>]
 module Graph =

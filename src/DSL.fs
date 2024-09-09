@@ -131,6 +131,14 @@ module Option =
         Option.map (f >> Result.map Some) value |> Option.defaultValue (Ok None)
 
 [<RequireQualifiedAccess>]
+module OptionAsync =
+    
+    let wrap f =
+        function
+        | Some x -> f x
+        | None -> async { return None }
+
+[<RequireQualifiedAccess>]
 module ResultAsync =
     let wrap f =
         function

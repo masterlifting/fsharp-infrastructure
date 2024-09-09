@@ -17,7 +17,7 @@ module Errors =
         | NotFound of string
         | NotSupported of string
         | NotImplemented of string
-        | Cancelled of string
+        | Canceled of string
 
         member this.Message =
             match this with
@@ -26,7 +26,7 @@ module Errors =
             | NotFound src -> $"Not found -> %s{src}"
             | NotSupported src -> $"Not supported -> %s{src}"
             | NotImplemented src -> $"Not implemented -> %s{src}"
-            | Cancelled src -> $"Cancelled -> %s{src}"
+            | Canceled src -> $"Cancelled -> %s{src}"
 
         member this.extend msg =
             match this with
@@ -41,7 +41,7 @@ module Errors =
             | NotFound src -> NotFound $"%s{src} %s{msg}"
             | NotSupported src -> NotSupported $"%s{src} %s{msg}"
             | NotImplemented src -> NotImplemented $"%s{src} %s{msg}"
-            | Cancelled src -> Cancelled $"%s{src} %s{msg}"
+            | Canceled src -> Canceled $"%s{src} %s{msg}"
 
 [<RequireQualifiedAccess>]
 module Graph =

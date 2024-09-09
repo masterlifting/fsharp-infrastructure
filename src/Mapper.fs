@@ -18,7 +18,7 @@ module Error =
     let NotImplemented = nameof NotImplemented
 
     [<Literal>]
-    let Cancelled = nameof Cancelled
+    let Cancelled = nameof Canceled
 
     let toExternal error =
         let result = External.Error()
@@ -41,7 +41,7 @@ module Error =
         | Errors.NotImplemented src ->
             result.Type <- NotImplemented
             result.Value <- src
-        | Errors.Cancelled src ->
+        | Errors.Canceled src ->
             result.Type <- Cancelled
             result.Value <- src
 
@@ -62,5 +62,5 @@ module Error =
         | NotFound -> Errors.NotFound error.Value |> Ok
         | NotSupported -> Errors.NotSupported error.Value |> Ok
         | NotImplemented -> Errors.NotImplemented error.Value |> Ok
-        | Cancelled -> Errors.Cancelled error.Value |> Ok
+        | Cancelled -> Errors.Canceled error.Value |> Ok
         | _ -> Error <| Errors.NotSupported "Unknown error type"

@@ -132,7 +132,7 @@ module Option =
 
 [<RequireQualifiedAccess>]
 module OptionAsync =
-    
+
     let wrap f =
         function
         | Some x -> f x
@@ -140,6 +140,7 @@ module OptionAsync =
 
 [<RequireQualifiedAccess>]
 module ResultAsync =
+
     let wrap f =
         function
         | Ok x -> f x

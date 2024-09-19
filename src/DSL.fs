@@ -123,6 +123,21 @@ module Graph =
             | _ -> nodeChildren |> List.tryPick (innerLoop targetName (Some nodeName))
 
         innerLoop nodeName None node
+        
+[<RequireQualifiedAccess>]
+module Async =
+    
+    let bind continuation asyncWorkflow =
+        async {
+            let! result = asyncWorkflow
+            return! continuation result
+        }
+    
+    let map continuation asyncWorkflow =
+        async {
+            let! result = asyncWorkflow
+            return continuation result
+        }
 
 [<RequireQualifiedAccess>]
 module Option =

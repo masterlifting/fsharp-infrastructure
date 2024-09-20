@@ -193,12 +193,6 @@ module ResultAsync =
             return Result.mapError f result
         }
 
-    let mapError' f asyncResult =
-        async {
-            let! result = asyncResult
-            return Result.mapError f result
-        }
-
 [<RequireQualifiedAccess>]
 module Exception =
     let toMessage (ex: exn) =

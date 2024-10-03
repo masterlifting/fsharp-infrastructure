@@ -123,20 +123,20 @@ module Graph =
             | _ -> nodeChildren |> List.tryPick (innerLoop targetName (Some nodeName))
 
         innerLoop nodeName None node
-        
+
 [<RequireQualifiedAccess>]
 module Async =
-    
-    let bind continuation asyncWorkflow =
+
+    let bind next asyncWorkflow =
         async {
             let! result = asyncWorkflow
-            return! continuation result
+            return! next result
         }
-    
-    let map continuation asyncWorkflow =
+
+    let map next asyncWorkflow =
         async {
             let! result = asyncWorkflow
-            return continuation result
+            return next result
         }
 
 [<RequireQualifiedAccess>]
@@ -167,7 +167,7 @@ module ResultAsync =
             return Result.bind f result
         }
 
-    let bind' f asyncResult =
+    let bindAsync f asyncResult =
         async {
             match! asyncResult with
             | Ok result -> return! f result
@@ -180,7 +180,7 @@ module ResultAsync =
             return Result.map f result
         }
 
-    let map' f asyncResult =
+    let mapAsync f asyncResult =
         async {
             match! asyncResult with
             | Ok result -> return Ok <| f result
@@ -191,6 +191,15 @@ module ResultAsync =
         async {
             let! result = asyncResult
             return Result.mapError f result
+        }
+
+    let mapErrorAsync f asyncResult =
+        async {
+            match! asyncResult with
+            | Ok result -> return Ok result
+            | Error err ->
+                let! err =  f err
+                return Error err
         }
 
 [<RequireQualifiedAccess>]
@@ -214,8 +223,8 @@ module String =
 [<AutoOpen>]
 module CE =
     type ResultAsyncBuilder() =
-        member _.Bind(m, f) = ResultAsync.bind' f m
-        member _.Return m = ResultAsync.map' id m
+        member _.Bind(m, f) = ResultAsync.bindAsync f m
+        member _.Return m = ResultAsync.mapAsync id m
         member _.ReturnFrom m = ResultAsync.wrap id m
 
     let resultAsync = ResultAsyncBuilder()

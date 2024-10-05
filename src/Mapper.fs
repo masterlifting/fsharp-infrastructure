@@ -41,7 +41,7 @@ module Error =
         | Errors.NotImplemented src ->
             result.Type <- NotImplemented
             result.Value <- src
-        | Errors.Canceled src ->
+        | Canceled src ->
             result.Type <- Cancelled
             result.Value <- src
 
@@ -62,5 +62,5 @@ module Error =
         | NotFound -> Errors.NotFound error.Value |> Ok
         | NotSupported -> Errors.NotSupported error.Value |> Ok
         | NotImplemented -> Errors.NotImplemented error.Value |> Ok
-        | Cancelled -> Errors.Canceled error.Value |> Ok
+        | Cancelled -> Canceled error.Value |> Ok
         | _ -> Error <| Errors.NotSupported "Unknown error type"

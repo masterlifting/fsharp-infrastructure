@@ -28,6 +28,21 @@ module Errors =
             | NotImplemented src -> $"Not implemented -> %s{src}"
             | Canceled src -> $"Cancelled -> %s{src}"
 
+        member this.MessageEx =
+            match this with
+            | Operation reason ->
+                match reason.Code with
+                | Some code -> $"Operation error -> %s{reason.Message} -> %s{code}"
+                | None -> $"Operation error -> %s{reason.Message}"
+            | Permission reason ->
+                match reason.Code with
+                | Some code -> $"Permission error -> %s{reason.Message} -> %s{code}"
+                | None -> $"Permission error -> %s{reason.Message}"
+            | NotFound src -> $"Not found -> %s{src}"
+            | NotSupported src -> $"Not supported -> %s{src}"
+            | NotImplemented src -> $"Not implemented -> %s{src}"
+            | Canceled src -> $"Cancelled -> %s{src}"
+
         member this.extend msg =
             match this with
             | Operation reason ->

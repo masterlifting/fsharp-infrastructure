@@ -198,7 +198,7 @@ module ResultAsync =
             match! asyncResult with
             | Ok result -> return Ok result
             | Error err ->
-                let! err =  f err
+                let! err = f err
                 return Error err
         }
 

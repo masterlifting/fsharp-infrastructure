@@ -43,20 +43,30 @@ module Errors =
             | NotImplemented src -> $"Not implemented -> %s{src}"
             | Canceled src -> $"Cancelled -> %s{src}"
 
-        member this.extend msg =
+        member this.add msg =
             match this with
             | Operation reason ->
                 Operation
                     { reason with
-                        Message = $"%s{reason.Message} %s{msg}" }
+                        Message = $"%s{reason.Message} -> %s{msg}" }
             | Permission reason ->
                 Permission
                     { reason with
-                        Message = $"%s{reason.Message} %s{msg}" }
-            | NotFound src -> NotFound $"%s{src} %s{msg}"
-            | NotSupported src -> NotSupported $"%s{src} %s{msg}"
-            | NotImplemented src -> NotImplemented $"%s{src} %s{msg}"
-            | Canceled src -> Canceled $"%s{src} %s{msg}"
+                        Message = $"%s{reason.Message} -> %s{msg}" }
+            | NotFound src -> NotFound $"%s{src} -> %s{msg}"
+            | NotSupported src -> NotSupported $"%s{src} -> %s{msg}"
+            | NotImplemented src -> NotImplemented $"%s{src} -> %s{msg}"
+            | Canceled src -> Canceled $"%s{src} -> %s{msg}"
+
+        member this.replace msg =
+            match this with
+            | Operation reason -> Operation { reason with Message = msg }
+            | Permission reason -> Permission { reason with Message = msg }
+            | NotFound src -> NotFound msg
+            | NotSupported src -> NotSupported msg
+            | NotImplemented src -> NotImplemented msg
+            | Canceled src -> Canceled msg
+
 
 [<RequireQualifiedAccess>]
 module Graph =

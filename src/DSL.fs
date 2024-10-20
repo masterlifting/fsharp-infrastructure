@@ -20,6 +20,11 @@ module AP =
         | true, value -> Some value
         | _ -> None
 
+    let (|IsGuid|_|) (input: string) =
+        match Guid.TryParse input with
+        | true, value -> Some value
+        | _ -> None
+
     let (|IsTimeSpan|_|) (input: string) =
         match TimeSpan.TryParse input with
         | true, value -> Some value

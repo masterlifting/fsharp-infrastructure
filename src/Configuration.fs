@@ -117,6 +117,8 @@ let private get<'a> key (section: IConfigurationSection) =
     let findValue key =
         config |> Map.tryFind key |> Option.bind id
 
+    //TODO: Imrove the Regex initialization by using a cache
+
     let rec getValue key type' =
         match type' with
         | valueType when valueType = typeof<string> -> findValue key |> Option.defaultValue String.Empty |> box

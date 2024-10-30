@@ -126,7 +126,7 @@ let private get<'a> key (section: IConfigurationSection) =
             |> Option.defaultValue (RuntimeHelpers.GetUninitializedObject valueType)
             |> box
         | valueType when valueType.IsArray ->
-            let regex = Regex($"{key}:(\d+)$")
+            let regex = Regex($"{key}:(\d+)$", RegexOptions.Compiled)
 
             let indexes =
                 config.Keys
@@ -137,8 +137,9 @@ let private get<'a> key (section: IConfigurationSection) =
                         Some(regexMatch.Groups[1].Value |> int)
                     else
                         None)
-                |> Seq.sort
-                |> Seq.toArray
+                |> Seq.distinct
+                |> Array.ofSeq
+                |> Array.sort
 
             let elementType = valueType.GetElementType()
             let result = Array.CreateInstance(elementType, indexes.Length)
@@ -153,7 +154,7 @@ let private get<'a> key (section: IConfigurationSection) =
             valueType.IsGenericType
             && valueType.GetGenericTypeDefinition() = typedefof<Option<_>>
             ->
-            let regex = Regex($"{key}:?\\w*$")
+            let regex = Regex($"{key}:?\\w*$", RegexOptions.Compiled)
 
             config.Keys
             |> Seq.tryFind regex.IsMatch

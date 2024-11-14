@@ -212,7 +212,7 @@ module Exception =
     let toMessage (ex: exn) =
         ex.InnerException
         |> Option.ofObj
-        |> Option.map (_.Message)
+        |> Option.map _.Message
         |> Option.defaultValue ex.Message
 
 [<AutoOpen>]
@@ -227,14 +227,12 @@ module String =
 
 [<AutoOpen>]
 module CE =
+    type ResultBuilder() =
+        member _.Bind(x, f) = Result.bind f x
+        member _.Return x = Ok x
+        member _.ReturnFrom x = x
+
     type ResultAsyncBuilder() =
         member _.Bind(m, f) = ResultAsync.bindAsync f m
         member _.Return m = ResultAsync.mapAsync id m
         member _.ReturnFrom m = ResultAsync.wrap id m
-
-    let resultAsync = ResultAsyncBuilder()
-
-    type ModelBuilder() =
-        member _.Bind(x, f) = Result.bind f x
-        member _.Return x = Ok x
-        member _.ReturnFrom x = x

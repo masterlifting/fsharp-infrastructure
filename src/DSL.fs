@@ -115,6 +115,11 @@ module Graph =
         match parentName with
         | None -> nodeName
         | Some parentName -> $"%s{parentName}.%s{nodeName}"
+        
+    let splitNodeName (nodeName: string) =
+        nodeName.Split '.' |> Array.toList
+        
+    let create<'a> (data: 'a)
 
     let findNode<'a when 'a :> Graph.INodeName> nodeName (node: Graph.Node<'a>) =
 

@@ -62,10 +62,10 @@ module Errors =
             match this with
             | Operation reason -> Operation { reason with Message = msg }
             | Permission reason -> Permission { reason with Message = msg }
-            | NotFound src -> NotFound msg
-            | NotSupported src -> NotSupported msg
-            | NotImplemented src -> NotImplemented msg
-            | Canceled src -> Canceled msg
+            | NotFound _ -> NotFound msg
+            | NotSupported _ -> NotSupported msg
+            | NotImplemented _ -> NotImplemented msg
+            | Canceled _ -> Canceled msg
 
 
 [<RequireQualifiedAccess>]

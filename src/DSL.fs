@@ -111,17 +111,46 @@ module Result =
 module Graph =
     open Domain
 
+    [<Literal>]
+    let private DELIMITER = "."
+
     let buildNodeName parentName nodeName =
         match parentName with
         | None -> nodeName
-        | Some parentName -> $"%s{parentName}.%s{nodeName}"
-        
-    let splitNodeName (nodeName: string) =
-        nodeName.Split '.' |> Array.toList
-        
-    let create<'a> (data: 'a)
+        | Some parentName -> $"%s{parentName}%s{DELIMITER}%s{nodeName}"
 
-    let findNode<'a when 'a :> Graph.INodeName> nodeName (node: Graph.Node<'a>) =
+    let splitNodeName (nodeName: string) = DELIMITER |> nodeName.Split
+
+    let buildNoneNameOfList names =
+        names |> List.fold (fun acc name -> $"%s{acc}%s{DELIMITER}%s{name}") ""
+
+    let getGeneration<'a when 'a :> Graph.INodeName> generation node =
+
+        let rec innerLoop nodeName currentGeneration (node: Graph.Node<'a>) =
+            let nodeValue, nodeChildren = node.Deconstructed
+
+            let nodeName = nodeName |> buildNodeName <| nodeValue.Name
+
+            match currentGeneration = generation with
+            | true -> node.Children
+            | false -> nodeChildren |> List.collect (innerLoop (Some nodeName) (currentGeneration + 1))
+
+        node |> innerLoop None 0
+
+    let flatten<'a when 'a :> Graph.INodeName> node =
+
+        let rec innerLoop nodeName (node: Graph.Node<'a>) =
+            let nodeValue, nodeChildren = node.Deconstructed
+
+            let nodeName = nodeName |> buildNodeName <| nodeValue.Name
+
+            let children = nodeChildren |> List.collect (innerLoop (Some nodeName))
+
+            (nodeName, nodeValue) :: children
+
+        node |> innerLoop None
+
+    let findNode<'a when 'a :> Graph.INodeName> name node =
 
         let rec innerLoop targetName nodeName (node: Graph.Node<'a>) =
             let nodeValue, nodeChildren = node.Deconstructed
@@ -132,7 +161,7 @@ module Graph =
             | true -> Some node
             | _ -> nodeChildren |> List.tryPick (innerLoop targetName (Some nodeName))
 
-        innerLoop nodeName None node
+        node |> innerLoop name None
 
 [<RequireQualifiedAccess>]
 module Async =

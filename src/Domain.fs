@@ -73,6 +73,7 @@ module Graph =
 
     type INodeName =
         abstract member Name: string
+        abstract member setName: string -> INodeName
 
     type Node<'a when 'a :> INodeName> =
         | Node of 'a * Node<'a> list
@@ -88,6 +89,15 @@ module Graph =
         member this.Children =
             match this with
             | Node(_, children) -> children
+
+        member this.ChildrenWithFullName =
+            match this with
+            | Node(current, children) ->
+                children
+                |> List.map (fun node ->
+                    let a = current.Name + "." + node.Value.Name |> node.Value.setName
+                    let b = a :?> 'a
+                    Node(b, node.ChildrenWithFullName))
 
 module Parser =
     module Html =

@@ -126,26 +126,19 @@ module Graph =
 
     let getGeneration<'a when 'a :> Graph.INodeName> generation node =
 
-        let rec innerLoop nodeName currentGeneration (node: Graph.Node<'a>) =
-            let nodeValue, nodeChildren = node.Deconstructed
-
-            let nodeName = nodeName |> buildNodeName <| nodeValue.Name
-
+        let rec innerLoop currentGeneration (node: Graph.Node<'a>) =
             match currentGeneration = generation with
-            | true -> node.Children
-            | false -> nodeChildren |> List.collect (innerLoop (Some nodeName) (currentGeneration + 1))
+            | true -> [ node ]
+            | false -> node.ChildrenWithFullName |> List.collect (innerLoop (currentGeneration + 1))
 
-        node |> innerLoop None 0
+        node |> innerLoop 0
 
     let flatten<'a when 'a :> Graph.INodeName> node =
 
         let rec innerLoop nodeName (node: Graph.Node<'a>) =
             let nodeValue, nodeChildren = node.Deconstructed
-
             let nodeName = nodeName |> buildNodeName <| nodeValue.Name
-
             let children = nodeChildren |> List.collect (innerLoop (Some nodeName))
-
             (nodeName, nodeValue) :: children
 
         node |> innerLoop None

@@ -111,50 +111,45 @@ module Result =
 module Graph =
     open Domain
 
-    [<Literal>]
-    let private DELIMITER = "."
-
     let buildNodeName parentName nodeName =
         match parentName with
         | None -> nodeName
-        | Some parentName -> $"%s{parentName}%s{DELIMITER}%s{nodeName}"
+        | Some parentName -> $"%s{parentName}%s{Graph.DELIMITER}%s{nodeName}"
 
-    let splitNodeName (nodeName: string) = DELIMITER |> nodeName.Split
+    let splitNodeName (nodeName: string) = Graph.DELIMITER |> nodeName.Split
 
     let buildNoneNameOfList names =
-        names |> List.fold (fun acc name -> $"%s{acc}%s{DELIMITER}%s{name}") ""
+        names |> List.fold (fun acc name -> $"%s{acc}%s{Graph.DELIMITER}%s{name}") ""
 
     let getGeneration<'a when 'a :> Graph.INodeName> generation node =
 
         let rec innerLoop currentGeneration (node: Graph.Node<'a>) =
             match currentGeneration = generation with
             | true -> [ node ]
-            | false -> node.ChildrenWithFullName |> List.collect (innerLoop (currentGeneration + 1))
+            | false ->
+                node.Value.Name
+                |> Some
+                |> node.Children
+                |> List.collect (innerLoop (currentGeneration + 1))
 
         node |> innerLoop 0
 
     let flatten<'a when 'a :> Graph.INodeName> node =
 
-        let rec innerLoop nodeName (node: Graph.Node<'a>) =
-            let nodeValue, nodeChildren = node.Deconstructed
-            let nodeName = nodeName |> buildNodeName <| nodeValue.Name
-            let children = nodeChildren |> List.collect (innerLoop (Some nodeName))
-            (nodeName, nodeValue) :: children
+        let rec innerLoop (node: Graph.Node<'a>) =
+            let children = node.Value.Name |> Some |> node.Children |> List.collect innerLoop
+            node.Value :: children
 
-        node |> innerLoop None
+        node |> innerLoop
 
-    let findNode<'a when 'a :> Graph.INodeName> name node =
-
-        let rec innerLoop targetName nodeName (node: Graph.Node<'a>) =
-            let nodeValue, nodeChildren = node.Deconstructed
-
-            let nodeName = nodeName |> buildNodeName <| nodeValue.Name
-
-            match nodeName = targetName with
-            | true -> Some node
-            | _ -> nodeChildren |> List.tryPick (innerLoop targetName (Some nodeName))
-
-        node |> innerLoop name None
+    let rec findNode<'a when 'a :> Graph.INodeName> name (graph: Graph.Node<'a>) =
+        match graph.Value.Name = name with
+        | true -> Some graph
+        | false ->
+            graph.Value.Name
+            |> Some
+            |> graph.Children
+            |> List.tryPick (findNode name)
 
 [<RequireQualifiedAccess>]
 module Async =

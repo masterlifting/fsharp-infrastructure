@@ -71,6 +71,9 @@ module Errors =
 [<RequireQualifiedAccess>]
 module Graph =
 
+    [<Literal>]
+    let DELIMITER = "."
+
     type INodeName =
         abstract member Name: string
         abstract member setName: string -> INodeName
@@ -78,26 +81,25 @@ module Graph =
     type Node<'a when 'a :> INodeName> =
         | Node of 'a * Node<'a> list
 
-        member this.Deconstructed =
-            match this with
-            | Node(current, children) -> (current, children)
-
         member this.Value =
             match this with
             | Node(current, _) -> current
-
-        member this.Children =
+            
+        member private this.Children' =
             match this with
             | Node(_, children) -> children
 
-        member this.ChildrenWithFullName =
+        member this.Children name =
             match this with
-            | Node(current, children) ->
-                children
-                |> List.map (fun node ->
-                    let a = current.Name + "." + node.Value.Name |> node.Value.setName
-                    let b = a :?> 'a
-                    Node(b, node.ChildrenWithFullName))
+            | Node(_, children) ->
+                match name with
+                | None -> children
+                | Some name ->
+                    children
+                    |> List.map (fun node ->
+                        let name = [ name; node.Value.Name ] |> String.concat DELIMITER
+                        let value = node.Value.setName name :?> 'a
+                        Node(value, node.Children'))
 
 module Parser =
     module Html =

@@ -126,30 +126,19 @@ module Graph =
         let rec innerLoop currentGeneration (node: Graph.Node<'a>) =
             match currentGeneration = generation with
             | true -> [ node ]
-            | false ->
-                node.Value.Name
-                |> Some
-                |> node.Children
-                |> List.collect (innerLoop (currentGeneration + 1))
+            | false -> node.Children |> List.collect (innerLoop (currentGeneration + 1))
 
         node |> innerLoop 0
-
-    let flatten<'a when 'a :> Graph.INodeName> node =
-
-        let rec innerLoop (node: Graph.Node<'a>) =
-            let children = node.Value.Name |> Some |> node.Children |> List.collect innerLoop
-            node.Value :: children
-
-        node |> innerLoop
 
     let rec findNode<'a when 'a :> Graph.INodeName> name (graph: Graph.Node<'a>) =
         match graph.Value.Name = name with
         | true -> Some graph
-        | false ->
-            graph.Value.Name
-            |> Some
-            |> graph.Children
-            |> List.tryPick (findNode name)
+        | false -> graph.Children |> List.tryPick (findNode name)
+    
+    let rec findNodeById<'a when 'a :> Graph.INodeName> nodeId (graph: Graph.Node<'a>) =
+        match graph.Id = nodeId with
+        | true -> Some graph
+        | false -> graph.Children |> List.tryPick (findNodeById nodeId)
 
 [<RequireQualifiedAccess>]
 module Async =

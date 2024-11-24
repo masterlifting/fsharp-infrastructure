@@ -70,13 +70,29 @@ module Errors =
 
 [<RequireQualifiedAccess>]
 module Graph =
+    open System
 
     [<Literal>]
     let DELIMITER = "."
 
+    type NodeId =
+        | NodeIdValue of Guid
+
+        member this.Value =
+            match this with
+            | NodeIdValue id -> id
+
+        static member parse(value: string) =
+            match value |> Guid.TryParse with
+            | true, id -> NodeIdValue id |> Ok
+            | _ -> $"RequestId value: {value}" |> NotSupported |> Error
+
+        static member New = Guid.NewGuid() |> NodeIdValue
+
     type INodeName =
+        abstract member Id: NodeId
         abstract member Name: string
-        abstract member setName: string -> INodeName
+        abstract member set: NodeId * string -> INodeName
 
     type Node<'a when 'a :> INodeName> =
         | Node of 'a * Node<'a> list
@@ -84,22 +100,30 @@ module Graph =
         member this.Value =
             match this with
             | Node(current, _) -> current
-            
-        member private this.Children' =
-            match this with
-            | Node(_, children) -> children
 
-        member this.Children name =
+        member this.Id = this.Value.Id
+        member this.FullName = this.Value.Name
+        member this.LastName = DELIMITER |> this.Value.Name.Split |> Array.last
+
+        member private this.GetChildren name =
             match this with
             | Node(_, children) ->
-                match name with
-                | None -> children
-                | Some name ->
-                    children
-                    |> List.map (fun node ->
-                        let name = [ name; node.Value.Name ] |> String.concat DELIMITER
-                        let value = node.Value.setName name :?> 'a
-                        Node(value, node.Children'))
+                children
+                |> List.map (fun node ->
+                    let value =
+                        [ name; node.FullName ]
+                        |> String.concat DELIMITER
+                        |> fun name -> (NodeId.New, name)
+                        |> node.Value.set
+                        :?> 'a
+
+                    let children =
+                        match node with
+                        | Node(_, children) -> children
+
+                    Node(value, children))
+
+        member this.Children = this.FullName |> this.GetChildren
 
 module Parser =
     module Html =

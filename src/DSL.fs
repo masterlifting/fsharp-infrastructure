@@ -116,29 +116,69 @@ module Graph =
         | None -> nodeName
         | Some parentName -> $"%s{parentName}%s{Graph.DELIMITER}%s{nodeName}"
 
-    let splitNodeName (nodeName: string) = Graph.DELIMITER |> nodeName.Split
+    let splitNodeName (name: string) = Graph.DELIMITER |> name.Split
 
-    let buildNoneNameOfList names =
-        names |> List.fold (fun acc name -> $"%s{acc}%s{Graph.DELIMITER}%s{name}") ""
+    let buildNoneNameOfList names = names |> String.concat Graph.DELIMITER
 
-    let getGeneration<'a when 'a :> Graph.INodeName> generation node =
+    module DFS =
 
-        let rec innerLoop currentGeneration (node: Graph.Node<'a>) =
-            match currentGeneration = generation with
-            | true -> [ node ]
-            | false -> node.Children |> List.collect (innerLoop (currentGeneration + 1))
+        /// <summary>
+        /// Tries to find a node by its full name in the graph using depth-first search.
+        /// </summary>
+        /// <param name="name">The full name of the node.</param>
+        /// <param name="graph">The graph to search in.</param>
+        /// <returns>The node if found, otherwise None.</returns>
+        let rec tryFindByName<'a when 'a :> Graph.INodeName> name (graph: Graph.Node<'a>) =
+            match graph.FullName = name with
+            | true -> Some graph
+            | false -> graph.Children |> List.tryPick (tryFindByName name)
 
-        node |> innerLoop 0
+        /// <summary>
+        /// Tries to find a node by its ID in the graph using depth-first search.
+        /// </summary>
+        /// <param name="nodeId">The ID of the node.</param>
+        /// <param name="graph">The graph to search in.</param>
+        /// <returns>The node if found, otherwise None.</returns>
+        let rec tryFindById<'a when 'a :> Graph.INodeName> nodeId (graph: Graph.Node<'a>) =
+            match graph.Id = nodeId with
+            | true -> Some graph
+            | false -> graph.Children |> List.tryPick (tryFindById nodeId)
 
-    let rec findNode<'a when 'a :> Graph.INodeName> name (graph: Graph.Node<'a>) =
-        match graph.Value.Name = name with
-        | true -> Some graph
-        | false -> graph.Children |> List.tryPick (findNode name)
-    
-    let rec findNodeById<'a when 'a :> Graph.INodeName> nodeId (graph: Graph.Node<'a>) =
-        match graph.Id = nodeId with
-        | true -> Some graph
-        | false -> graph.Children |> List.tryPick (findNodeById nodeId)
+    module BFS =
+
+        /// <summary>
+        /// Tries to find a node by its full name in the graph using breadth-first search.
+        /// </summary>
+        /// <param name="name">The full name of the node.</param>
+        /// <param name="graph">The graph to search in.</param>
+        /// <returns>The node if found, otherwise None.</returns>
+        let tryFindByName<'a when 'a :> Graph.INodeName> name graph =
+            let rec search (nodes: Graph.Node<'a> list) =
+                match nodes with
+                | [] -> None
+                | node :: tail ->
+                    match node.FullName = name with
+                    | true -> Some node
+                    | false -> search (tail @ node.Children)
+
+            [ graph ] |> search
+
+        /// <summary>
+        /// Tries to find a node by its ID in the graph using breadth-first search.
+        /// </summary>
+        /// <param name="nodeId">The ID of the node.</param>
+        /// <param name="graph">The graph to search in.</param>
+        /// <returns>The node if found, otherwise None.</returns>
+        let tryFindById<'a when 'a :> Graph.INodeName> nodeId graph =
+            let rec search (nodes: Graph.Node<'a> list) =
+                match nodes with
+                | [] -> None
+                | node :: tail ->
+                    match node.Id = nodeId with
+                    | true -> Some node
+                    | false -> search (tail @ node.Children)
+
+            [ graph ] |> search
 
 [<RequireQualifiedAccess>]
 module Async =

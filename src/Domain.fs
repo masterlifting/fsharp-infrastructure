@@ -85,14 +85,16 @@ module Graph =
         static member parse(value: string) =
             match value |> Guid.TryParse with
             | true, id -> NodeIdValue id |> Ok
-            | _ -> $"RequestId value: {value}" |> NotSupported |> Error
+            | _ -> $"NodeId value: {value}" |> NotSupported |> Error
+
+        static member create(value: string) = value |> Guid |> NodeIdValue
 
         static member New = Guid.NewGuid() |> NodeIdValue
 
     type INodeName =
         abstract member Id: NodeId
         abstract member Name: string
-        abstract member set: NodeId * string -> INodeName
+        abstract member setFullName: string -> INodeName
 
     type Node<'a when 'a :> INodeName> =
         | Node of 'a * Node<'a> list
@@ -102,8 +104,9 @@ module Graph =
             | Node(current, _) -> current
 
         member this.Id = this.Value.Id
+
         member this.FullName = this.Value.Name
-        member this.LastName = DELIMITER |> this.Value.Name.Split |> Array.last
+        member this.ShortName = DELIMITER |> this.Value.Name.Split |> Array.last
 
         member private this.GetChildren name =
             match this with
@@ -111,11 +114,7 @@ module Graph =
                 children
                 |> List.map (fun node ->
                     let value =
-                        [ name; node.FullName ]
-                        |> String.concat DELIMITER
-                        |> fun name -> (NodeId.New, name)
-                        |> node.Value.set
-                        :?> 'a
+                        [ name; node.FullName ] |> String.concat DELIMITER |> node.Value.setFullName :?> 'a
 
                     let children =
                         match node with

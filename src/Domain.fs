@@ -94,7 +94,7 @@ module Graph =
     type INodeName =
         abstract member Id: NodeId
         abstract member Name: string
-        abstract member setFullName: string -> INodeName
+        abstract member setName: string -> INodeName
 
     type Node<'a when 'a :> INodeName> =
         | Node of 'a * Node<'a> list
@@ -114,7 +114,7 @@ module Graph =
                 children
                 |> List.map (fun node ->
                     let value =
-                        [ name; node.FullName ] |> String.concat DELIMITER |> node.Value.setFullName :?> 'a
+                        [ name; node.FullName ] |> String.concat DELIMITER |> node.Value.setName :?> 'a
 
                     let children =
                         match node with

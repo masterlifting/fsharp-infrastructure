@@ -119,7 +119,7 @@ module Graph =
     let splitNodeName (name: string) = Graph.DELIMITER |> name.Split
 
     let buildNoneNameOfList names = names |> String.concat Graph.DELIMITER
-    
+
     module DFS =
 
         /// <summary>

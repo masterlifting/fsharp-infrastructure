@@ -104,9 +104,7 @@ module Graph =
             | Node(current, _) -> current
 
         member this.Id = this.Value.Id
-
         member this.FullName = this.Value.Name
-        member this.ShortName = DELIMITER |> this.Value.Name.Split |> Array.last
 
         member private this.GetChildren name =
             match this with

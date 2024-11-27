@@ -111,7 +111,7 @@ module Result =
 module Graph =
     open Domain
 
-    let buildNodeName parentName nodeName =
+    let buildNodeName nodeName parentName =
         match parentName with
         | None -> nodeName
         | Some parentName -> $"%s{parentName}%s{Graph.DELIMITER}%s{nodeName}"

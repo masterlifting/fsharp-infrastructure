@@ -116,9 +116,7 @@ module Graph =
         | None -> nodeName
         | Some parentName -> $"%s{parentName}%s{Graph.DELIMITER}%s{nodeName}"
 
-    let splitNodeName (name: string) = Graph.DELIMITER |> name.Split
-
-    let buildNoneNameOfList names = names |> String.concat Graph.DELIMITER
+    let splitNodeName (name: string) = Graph.DELIMITER |> name.Split |> Array.toList
 
     module DFS =
 

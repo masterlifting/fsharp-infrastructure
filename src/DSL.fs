@@ -120,6 +120,9 @@ module Graph =
 
     let splitNodeName (name: string) =
         Graph.DELIMITER |> name.Split |> Array.toList
+        
+    let containsSubName (name: string) (parentName: string) =
+        parentName.IndexOf(name) <> -1
 
     module DFS =
 

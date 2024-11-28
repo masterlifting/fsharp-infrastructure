@@ -76,20 +76,18 @@ module Graph =
     let DELIMITER = "."
 
     type NodeId =
-        | NodeIdValue of Guid
+        | NodeIdValue of string
 
         member this.Value =
             match this with
             | NodeIdValue id -> id
 
-        static member parse(value: string) =
-            match value |> Guid.TryParse with
-            | true, id -> NodeIdValue id |> Ok
-            | _ -> $"NodeId value: {value}" |> NotSupported |> Error
+        static member create(value: string) =
+            match value |> String.IsNullOrWhiteSpace with
+            | false -> NodeIdValue value |> Ok
+            | true -> $"NodeId value: {value}" |> NotSupported |> Error
 
-        static member create(value: string) = value |> Guid |> NodeIdValue
-
-        static member New = Guid.NewGuid() |> NodeIdValue
+        static member New = Guid.NewGuid() |> string |> NodeIdValue
 
     type INodeName =
         abstract member Id: NodeId

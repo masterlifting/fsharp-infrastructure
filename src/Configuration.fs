@@ -104,6 +104,15 @@ let private getYamlConfiguration fileName =
 let getYaml = getYamlConfiguration
 let getJson = getJsonConfiguration
 
+let private TypeHandlers =
+    dict
+        [ typeof<bool>, (box false, (fun (v: string) -> box (Convert.ToBoolean v)))
+          typeof<int>, (box 0, (fun (v: string) -> box (Convert.ToInt32 v)))
+          typeof<float>, (box 0.0, (fun (v: string) -> box (Convert.ToDouble v)))
+          typeof<DateTime>, (box DateTime.MinValue, (fun (v: string) -> box (Convert.ToDateTime v)))
+          typeof<TimeSpan>, (box TimeSpan.Zero, (fun (v: string) -> box (TimeSpan.Parse v)))
+          typeof<Guid>, (box Guid.Empty, (fun (v: string) -> box (Guid.Parse v))) ]
+
 let private get<'a> key (section: IConfigurationSection) =
     let config =
         section.AsEnumerable()
@@ -117,6 +126,16 @@ let private get<'a> key (section: IConfigurationSection) =
     let findValue key =
         config |> Map.tryFind key |> Option.bind id
 
+    let defaultValue (t: Type) =
+        match TypeHandlers.TryGetValue t with
+        | true, (defaultValue, _) -> defaultValue
+        | _ -> RuntimeHelpers.GetUninitializedObject t |> box
+
+    let convertValue (value: string) (t: Type) =
+        match TypeHandlers.TryGetValue t with
+        | true, (_, converter) -> converter value
+        | _ -> Convert.ChangeType(value, t) |> box
+
     //TODO: Imrove the Regex initialization by using a cache
 
     let rec getValue key type' =
@@ -124,9 +143,8 @@ let private get<'a> key (section: IConfigurationSection) =
         | valueType when valueType = typeof<string> -> findValue key |> Option.defaultValue String.Empty |> box
         | valueType when valueType.IsValueType ->
             findValue key
-            |> Option.map (fun x -> Convert.ChangeType(x, valueType))
-            |> Option.defaultValue (RuntimeHelpers.GetUninitializedObject valueType)
-            |> box
+            |> Option.map (fun v -> convertValue v valueType)
+            |> Option.defaultValue (defaultValue valueType)
         | valueType when valueType.IsArray ->
             let regex = Regex($"{key}:(\d+)$", RegexOptions.Compiled)
 

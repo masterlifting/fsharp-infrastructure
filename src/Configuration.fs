@@ -104,7 +104,7 @@ let private getYamlConfiguration fileName =
 let getYaml = getYamlConfiguration
 let getJson = getJsonConfiguration
 
-let private TypeHandlers =
+let private typeHandlersMap =
     dict
         [ typeof<bool>, (box false, (fun (v: string) -> box (Convert.ToBoolean v)))
           typeof<int>, (box 0, (fun (v: string) -> box (Convert.ToInt32 v)))
@@ -114,7 +114,7 @@ let private TypeHandlers =
           typeof<Guid>, (box Guid.Empty, (fun (v: string) -> box (Guid.Parse v))) ]
 
 let private get<'a> key (section: IConfigurationSection) =
-    let config =
+    let configMap =
         section.AsEnumerable()
         |> Seq.map (fun x ->
             if String.IsNullOrEmpty(x.Value) then
@@ -123,20 +123,20 @@ let private get<'a> key (section: IConfigurationSection) =
                 (x.Key, Some x.Value))
         |> Map.ofSeq
 
-    let findValue key =
-        config |> Map.tryFind key |> Option.bind id
+    let inline findValue key =
+        configMap |> Map.tryFind key |> Option.bind id
 
-    let defaultValue (t: Type) =
-        match TypeHandlers.TryGetValue t with
+    let inline defaultValue (t: Type) =
+        match typeHandlersMap.TryGetValue t with
         | true, (defaultValue, _) -> defaultValue
         | _ -> RuntimeHelpers.GetUninitializedObject t |> box
 
-    let convertValue (value: string) (t: Type) =
-        match TypeHandlers.TryGetValue t with
+    let inline convertValue (value: string) (t: Type) =
+        match typeHandlersMap.TryGetValue t with
         | true, (_, converter) -> converter value
         | _ -> Convert.ChangeType(value, t) |> box
 
-    //TODO: Imrove the Regex initialization by using a cache
+    //TODO: Improve the Regex initialization by using a cache
 
     let rec getValue key type' =
         match type' with
@@ -149,7 +149,7 @@ let private get<'a> key (section: IConfigurationSection) =
             let regex = Regex($"{key}:(\d+)$", RegexOptions.Compiled)
 
             let indexes =
-                config.Keys
+                configMap.Keys
                 |> Seq.choose (fun key ->
                     let regexMatch = regex.Match key
 
@@ -176,7 +176,7 @@ let private get<'a> key (section: IConfigurationSection) =
             ->
             let regex = Regex($"{key}:?\\w*$", RegexOptions.Compiled)
 
-            config.Keys
+            configMap.Keys
             |> Seq.tryFind regex.IsMatch
             |> Option.map (fun _ ->
                 let innerType = valueType.GetGenericArguments()[0]

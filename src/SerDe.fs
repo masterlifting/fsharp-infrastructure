@@ -24,7 +24,10 @@ module Json =
         try
             Ok <| JsonSerializer.Serialize data
         with ex ->
-            Error <| NotSupported ex.Message
+            Error
+            <| Operation
+                { Message = ex |> Exception.toMessage
+                  Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
 
     let serialize' optionsType data =
 
@@ -37,13 +40,20 @@ module Json =
         try
             Ok <| JsonSerializer.Serialize(data, options)
         with ex ->
-            Error <| NotSupported ex.Message
+            Error
+            <| Operation
+                { Message = ex |> Exception.toMessage
+                  Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
+
 
     let deserialize<'a> (data: string) =
         try
             Ok <| JsonSerializer.Deserialize<'a> data
         with ex ->
-            Error <| NotSupported ex.Message
+            Error
+            <| Operation
+                { Message = ex |> Exception.toMessage
+                  Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
 
     let deserialize'<'a> optionsType (data: string) =
 
@@ -56,7 +66,10 @@ module Json =
         try
             Ok <| JsonSerializer.Deserialize<'a>(data, options)
         with ex ->
-            Error <| NotSupported ex.Message
+            Error
+            <| Operation
+                { Message = ex |> Exception.toMessage
+                  Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
 
 [<RequireQualifiedAccess>]
 module Yaml =
@@ -69,10 +82,16 @@ module Yaml =
         try
             Ok <| serializer.Serialize data
         with ex ->
-            Error <| NotSupported ex.Message
+            Error
+            <| Operation
+                { Message = ex |> Exception.toMessage
+                  Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
 
     let deserialize<'a> (data: string) =
         try
             Ok <| deserializer.Deserialize<'a> data
         with ex ->
-            Error <| NotSupported ex.Message
+            Error
+            <| Operation
+                { Message = ex |> Exception.toMessage
+                  Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }

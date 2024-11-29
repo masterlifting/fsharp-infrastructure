@@ -120,9 +120,6 @@ module Graph =
 
     let splitNodeName (name: string) =
         Graph.DELIMITER |> name.Split |> Array.toList
-        
-    let containsSubName (name: string) (parentName: string) =
-        parentName.IndexOf(name) <> -1
 
     module DFS =
 
@@ -144,7 +141,7 @@ module Graph =
         /// <param name="graph">The graph to search in.</param>
         /// <returns>The node if found, otherwise None.</returns>
         let rec tryFindById<'a when 'a :> Graph.INodeName> nodeId (graph: Graph.Node<'a>) =
-            match graph.Id = nodeId with
+            match graph.FullId = nodeId with
             | true -> Some graph
             | false -> graph.Children |> List.tryPick (tryFindById nodeId)
 
@@ -178,7 +175,7 @@ module Graph =
                 match nodes with
                 | [] -> None
                 | node :: tail ->
-                    match node.Id = nodeId with
+                    match node.FullId = nodeId with
                     | true -> Some node
                     | false -> search (tail @ node.Children)
 

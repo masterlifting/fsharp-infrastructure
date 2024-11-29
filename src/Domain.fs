@@ -92,7 +92,7 @@ module Graph =
     type INodeName =
         abstract member Id: NodeId
         abstract member Name: string
-        abstract member setName: string -> INodeName
+        abstract member set: NodeId * string -> INodeName
 
     type Node<'a when 'a :> INodeName> =
         | Node of 'a * Node<'a> list
@@ -101,17 +101,25 @@ module Graph =
             match this with
             | Node(current, _) -> current
 
-        member this.Id = this.Value.Id
+        member this.FullId = this.Value.Id
+        member this.ShortId = DELIMITER |> this.FullId.Value.Split |> Array.last
+        member this.Ids = DELIMITER |> this.FullId.Value.Split |> Array.toList
+
         member this.FullName = this.Value.Name
         member this.ShortName = DELIMITER |> this.FullName.Split |> Array.last
+        member this.Names = DELIMITER |> this.FullName.Split |> Array.toList
 
-        member private this.GetChildren name =
+        member this.Contains(name) = this.Names |> List.contains name
+
+        member private this.GetChildren(id: NodeId, name) =
             match this with
             | Node(_, children) ->
                 children
                 |> List.map (fun node ->
-                    let value =
-                        [ name; node.FullName ] |> String.concat DELIMITER |> node.Value.setName :?> 'a
+                    let id = [ id.Value; node.FullId.Value ] |> String.concat DELIMITER |> NodeIdValue
+                    let name = [ name; node.FullName ] |> String.concat DELIMITER
+
+                    let value = (id, name) |> node.Value.set :?> 'a
 
                     let children =
                         match node with
@@ -119,7 +127,7 @@ module Graph =
 
                     Node(value, children))
 
-        member this.Children = this.FullName |> this.GetChildren
+        member this.Children = (this.FullId, this.FullName) |> this.GetChildren
 
 module Parser =
     module Html =

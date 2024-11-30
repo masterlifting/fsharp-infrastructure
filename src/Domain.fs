@@ -87,7 +87,7 @@ module Graph =
             | false -> NodeIdValue value |> Ok
             | true -> $"NodeId value: {value}" |> NotSupported |> Error
 
-        static member NewGuid = Guid.NewGuid() |> string |> NodeIdValue
+        static member New = Guid.NewGuid() |> string |> NodeIdValue
 
     type INodeName =
         abstract member Id: NodeId

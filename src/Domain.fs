@@ -102,7 +102,7 @@ module Graph =
             | Node(current, _) -> current
 
         member this.FullId = this.Value.Id
-        member this.ShortId = DELIMITER |> this.FullId.Value.Split |> Array.last
+        member this.ShortId = DELIMITER |> this.FullId.Value.Split |> Array.last |> NodeIdValue
         member this.Ids = DELIMITER |> this.FullId.Value.Split |> Array.toList
 
         member this.FullName = this.Value.Name

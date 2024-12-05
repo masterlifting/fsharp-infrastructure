@@ -67,7 +67,6 @@ module Errors =
             | NotImplemented _ -> NotImplemented msg
             | Canceled _ -> Canceled msg
 
-
 [<RequireQualifiedAccess>]
 module Graph =
     open System
@@ -145,9 +144,3 @@ module SerDe =
             | WebApi
             | Standard
             | DU of Serialization.JsonConverter
-
-module External =
-    type Error() =
-        member val Type: string = System.String.Empty with get, set
-        member val Value: string = System.String.Empty with get, set
-        member val Code: string option = None with get, set

@@ -1,6 +1,8 @@
 ﻿[<AutoOpen>]
 module Infrastructure.Domain
 
+open System
+
 [<AutoOpen>]
 module Errors =
 
@@ -66,6 +68,20 @@ module Errors =
             | NotSupported _ -> NotSupported msg
             | NotImplemented _ -> NotImplemented msg
             | Canceled _ -> Canceled msg
+
+        static member combine(errors: Error' list) =
+            match errors.Length with
+            | 0 -> "Errors in the error list" |> NotFound
+            | 1 -> errors[0]
+            | _ ->
+                let errors =
+                    errors
+                    |> Seq.mapi (fun i error -> $"%i{i}. %s{error.MessageEx}")
+                    |> String.concat Environment.NewLine
+
+                Operation
+                    { Message = $"%s{Environment.NewLine}Multiple errors occurred:%s{Environment.NewLine}%s{errors}"
+                      Code = None }
 
 [<RequireQualifiedAccess>]
 module Graph =

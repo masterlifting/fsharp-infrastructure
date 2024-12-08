@@ -1,18 +1,19 @@
 ﻿module Infrastructure.Parser
 
+open Infrastructure.Domain
+
 module Html =
-    open Infrastructure
-    open Infrastructure.Domain.Parser.Html
+    open HtmlAgilityPack
 
     let load (html: string) =
         try
-            let document = Page()
+            let document = HtmlDocument()
             document.LoadHtml html
             Ok document
         with ex ->
             Error <| NotSupported ex.Message
 
-    let getNode (xpath: string) (html: Page) =
+    let getNode (xpath: string) (html: HtmlDocument) =
         try
             match html.DocumentNode.SelectSingleNode(xpath) with
             | null -> Ok None
@@ -20,7 +21,7 @@ module Html =
         with ex ->
             Error <| NotSupported ex.Message
 
-    let getNodes (xpath: string) (html: Page) =
+    let getNodes (xpath: string) (html: HtmlDocument) =
         try
             match html.DocumentNode.SelectNodes(xpath) with
             | null -> Ok None
@@ -28,7 +29,7 @@ module Html =
         with ex ->
             Error <| NotSupported ex.Message
 
-    let getAttributeValue (attribute: string) (node: Node) =
+    let getAttributeValue (attribute: string) (node: HtmlNode) =
         try
             match node.GetAttributeValue(attribute, "") with
             | "" -> Ok None

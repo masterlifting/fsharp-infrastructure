@@ -5,7 +5,7 @@ open System
 open Infrastructure.Domain
 
 [<Literal>]
-let DELIMITER = "."
+let internal DELIMITER = "."
 
 type NodeId =
     | NodeIdValue of string

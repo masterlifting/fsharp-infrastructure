@@ -2,9 +2,13 @@ module Infrastructure.Configuration
 
 open System
 open System.Runtime.CompilerServices
+open System.Text.RegularExpressions
 open Microsoft.Extensions.Configuration
 open Microsoft.FSharp.Reflection
-open System.Text.RegularExpressions
+open Infrastructure.Domain
+open Infrastructure.Prelude
+
+[<AutoOpen>]
 
 module private Yaml =
     open System.IO
@@ -98,7 +102,7 @@ let private getJsonConfiguration fileName =
 let private getYamlConfiguration fileName =
     let file = $"{fileName}.yaml"
     let builder = ConfigurationBuilder()
-    let builder = builder |> Yaml.addFile <| file
+    let builder = builder |> addFile <| file
     builder.Build()
 
 let getYaml = getYamlConfiguration

@@ -4,15 +4,15 @@ module Infrastructure.Domain.Error
 open System
 
 type ErrorCode =
-    | AlreadyExists
-    | NotFound
+    | Line of path: string * file: string * line: string
+
+    member this.Value =
+        match this with
+        | Line(path, file, line) -> $"%s{path}\\%s{file}:%s{line}"
 
 type ErrorReason =
     { Message: string
       Code: ErrorCode option }
-
-    static member buildLine(path, file, line) = $"%s{path}\\%s{file}:%s{line}"
-    static member buildLineOpt = ErrorReason.buildLine >> Some
 
 type Error' =
     | Operation of ErrorReason

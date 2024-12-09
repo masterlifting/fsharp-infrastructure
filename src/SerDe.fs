@@ -1,24 +1,12 @@
 ﻿[<AutoOpen>]
 module Infrastructure.SerDe
 
-open Infrastructure
+open Infrastructure.Domain
+open Infrastructure.Prelude
 
 [<RequireQualifiedAccess>]
 module Json =
     open System.Text.Json
-    open Infrastructure.Domain.SerDe.Json
-
-    let private getWebApiOptions () =
-        let options = JsonSerializerOptions()
-        options.PropertyNamingPolicy <- JsonNamingPolicy.CamelCase
-        options
-
-    let private getStandardOptions () = JsonSerializerOptions()
-
-    let private getDuOptions converter =
-        let options = getStandardOptions ()
-        options.Converters.Add converter
-        options
 
     let serialize data =
         try
@@ -27,24 +15,7 @@ module Json =
             Error
             <| Operation
                 { Message = ex |> Exception.toMessage
-                  Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
-
-    let serialize' optionsType data =
-
-        let options =
-            match optionsType with
-            | WebApi -> getWebApiOptions ()
-            | Standard -> getStandardOptions ()
-            | DU converter -> getDuOptions converter
-
-        try
-            Ok <| JsonSerializer.Serialize(data, options)
-        with ex ->
-            Error
-            <| Operation
-                { Message = ex |> Exception.toMessage
-                  Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
-
+                  Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
 
     let deserialize<'a> (data: string) =
         try
@@ -53,23 +24,7 @@ module Json =
             Error
             <| Operation
                 { Message = ex |> Exception.toMessage
-                  Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
-
-    let deserialize'<'a> optionsType (data: string) =
-
-        let options =
-            match optionsType with
-            | WebApi -> getWebApiOptions ()
-            | Standard -> getStandardOptions ()
-            | DU converter -> getDuOptions converter
-
-        try
-            Ok <| JsonSerializer.Deserialize<'a>(data, options)
-        with ex ->
-            Error
-            <| Operation
-                { Message = ex |> Exception.toMessage
-                  Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
+                  Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
 
 [<RequireQualifiedAccess>]
 module Yaml =
@@ -85,7 +40,7 @@ module Yaml =
             Error
             <| Operation
                 { Message = ex |> Exception.toMessage
-                  Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
+                  Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
 
     let deserialize<'a> (data: string) =
         try
@@ -94,4 +49,4 @@ module Yaml =
             Error
             <| Operation
                 { Message = ex |> Exception.toMessage
-                  Code = ErrorReason.buildLineOpt (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) }
+                  Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }

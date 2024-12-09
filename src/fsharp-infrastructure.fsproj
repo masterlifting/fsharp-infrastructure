@@ -6,8 +6,19 @@
   <ItemGroup>
     <Compile Include="domain\Domain.Error.fs" />
     <Compile Include="domain\Domain.Graph.fs" />
+    <Compile Include="prelude\Prelude.Exception.fs" />
+    <Compile Include="prelude\Prelude.Threading.fs" />
+    <Compile Include="prelude\Prelude.Async.fs" />
+    <Compile Include="prelude\Prelude.Seq.fs" />
+    <Compile Include="prelude\Prelude.Map.fs" />
+    <Compile Include="prelude\Prelude.Option.fs" />
+    <Compile Include="prelude\Prelude.OptionAsync.fs" />
+    <Compile Include="prelude\Prelude.Result.fs" />
+    <Compile Include="prelude\Prelude.ResultAsync.fs" />
+    <Compile Include="prelude\Prelude.Graph.fs" />
+    <Compile Include="prelude\Prelude.String.fs" />
     <Compile Include="prelude\Prelude.AP.fs" />
-    <Compile Include="DSL.fs" />
+    <Compile Include="prelude\Prelude.CE.fs" />
     <Compile Include="SerDe.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Configuration.fs" />

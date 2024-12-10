@@ -5,10 +5,12 @@ open System
 
 type ErrorCode =
     | Line of path: string * file: string * line: string
+    | Http of Net.HttpStatusCode
 
     member this.Value =
         match this with
         | Line(path, file, line) -> $"%s{path}\\%s{file}:%s{line}"
+        | Http code -> $"%i{code}"
 
 type ErrorReason =
     { Message: string

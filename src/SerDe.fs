@@ -26,6 +26,15 @@ module Json =
                 { Message = ex |> Exception.toMessage
                   Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
 
+    let deserialize'<'a> (options: JsonSerializerOptions) (data: string) =
+        try
+            Ok <| JsonSerializer.Deserialize<'a>(data, options)
+        with ex ->
+            Error
+            <| Operation
+                { Message = ex |> Exception.toMessage
+                  Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
+
 [<RequireQualifiedAccess>]
 module Yaml =
     open YamlDotNet.Serialization

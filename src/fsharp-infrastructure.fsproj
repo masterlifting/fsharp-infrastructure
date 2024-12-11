@@ -4,21 +4,20 @@
     <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="domain\Domain.Error.fs" />
-    <Compile Include="domain\Domain.Graph.fs" />
-    <Compile Include="prelude\Prelude.Exception.fs" />
-    <Compile Include="prelude\Prelude.Threading.fs" />
-    <Compile Include="prelude\Prelude.Async.fs" />
-    <Compile Include="prelude\Prelude.Seq.fs" />
-    <Compile Include="prelude\Prelude.Map.fs" />
-    <Compile Include="prelude\Prelude.Option.fs" />
-    <Compile Include="prelude\Prelude.OptionAsync.fs" />
-    <Compile Include="prelude\Prelude.Result.fs" />
-    <Compile Include="prelude\Prelude.ResultAsync.fs" />
-    <Compile Include="prelude\Prelude.Graph.fs" />
-    <Compile Include="prelude\Prelude.String.fs" />
-    <Compile Include="prelude\Prelude.AP.fs" />
-    <Compile Include="prelude\Prelude.CE.fs" />
+    <Compile Include="domain\Error.fs" />
+    <Compile Include="domain\Graph.fs" />
+    <Compile Include="prelude\Exception.fs" />
+    <Compile Include="prelude\Threading.fs" />
+    <Compile Include="prelude\Async.fs" />
+    <Compile Include="prelude\Seq.fs" />
+    <Compile Include="prelude\Map.fs" />
+    <Compile Include="prelude\Option.fs" />
+    <Compile Include="prelude\Result.fs" />
+    <Compile Include="prelude\ResultAsync.fs" />
+    <Compile Include="prelude\Graph.fs" />
+    <Compile Include="prelude\String.fs" />
+    <Compile Include="prelude\ActivePattern.fs" />
+    <Compile Include="prelude\ComputationExpression.fs" />
     <Compile Include="SerDe.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Configuration.fs" />

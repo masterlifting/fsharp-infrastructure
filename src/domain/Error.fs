@@ -6,11 +6,13 @@ open System
 type ErrorCode =
     | Line of path: string * file: string * line: string
     | Http of Net.HttpStatusCode
+    | Custom of string
 
     member this.Value =
         match this with
         | Line(path, file, line) -> $"%s{path}\\%s{file}:%s{line}"
-        | Http code -> $"%i{code}"
+        | Http code -> code |> Enum.GetName
+        | Custom value -> value
 
 type ErrorReason =
     { Message: string
@@ -19,6 +21,7 @@ type ErrorReason =
 type Error' =
     | Operation of ErrorReason
     | Permission of ErrorReason
+    | AlreadyExists of string
     | NotFound of string
     | NotSupported of string
     | NotImplemented of string
@@ -28,6 +31,7 @@ type Error' =
         match this with
         | Operation reason -> $"Operation error -> %s{reason.Message}"
         | Permission reason -> $"Permission error -> %s{reason.Message}"
+        | AlreadyExists src -> $"Already exists -> %s{src}"
         | NotFound src -> $"Not found -> %s{src}"
         | NotSupported src -> $"Not supported -> %s{src}"
         | NotImplemented src -> $"Not implemented -> %s{src}"
@@ -43,6 +47,7 @@ type Error' =
             match reason.Code with
             | Some code -> $"Permission error -> %s{reason.Message} -> %A{code}"
             | None -> $"Permission error -> %s{reason.Message}"
+        | AlreadyExists src -> $"Already exists -> %s{src}"
         | NotFound src -> $"Not found -> %s{src}"
         | NotSupported src -> $"Not supported -> %s{src}"
         | NotImplemented src -> $"Not implemented -> %s{src}"
@@ -58,6 +63,7 @@ type Error' =
             Permission
                 { reason with
                     Message = $"%s{reason.Message} -> %s{msg}" }
+        | AlreadyExists src -> AlreadyExists $"%s{src} -> %s{msg}"
         | NotFound src -> NotFound $"%s{src} -> %s{msg}"
         | NotSupported src -> NotSupported $"%s{src} -> %s{msg}"
         | NotImplemented src -> NotImplemented $"%s{src} -> %s{msg}"
@@ -67,6 +73,7 @@ type Error' =
         match this with
         | Operation reason -> Operation { reason with Message = msg }
         | Permission reason -> Permission { reason with Message = msg }
+        | AlreadyExists _ -> AlreadyExists msg
         | NotFound _ -> NotFound msg
         | NotSupported _ -> NotSupported msg
         | NotImplemented _ -> NotImplemented msg

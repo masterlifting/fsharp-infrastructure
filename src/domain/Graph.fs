@@ -35,13 +35,11 @@ type Node<'a when 'a :> INodeName> =
 
     member this.FullId = this.Value.Id
     member this.ShortId = DELIMITER |> this.FullId.Value.Split |> Array.last |> NodeIdValue
-    member this.Ids = DELIMITER |> this.FullId.Value.Split |> Array.toList
+    member this.FullIds = DELIMITER |> this.FullId.Value.Split |> List.ofArray |> List.map NodeIdValue
 
     member this.FullName = this.Value.Name
     member this.ShortName = DELIMITER |> this.FullName.Split |> Array.last
-    member this.Names = DELIMITER |> this.FullName.Split |> Array.toList
-
-    member this.Contains(name) = this.Names |> List.contains name
+    member this.FullNames = DELIMITER |> this.FullName.Split |> List.ofArray
 
     member private this.GetChildren(id: NodeId, name) =
         match this with

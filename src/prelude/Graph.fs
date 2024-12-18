@@ -10,8 +10,8 @@ let buildNodeName nodeName parentName =
 
 let buildNodeNameOfSeq data = data |> String.concat Graph.DELIMITER
 
-let splitNodeName (name: string) =
-    Graph.DELIMITER |> name.Split |> Array.toList
+let split (name: string) =
+    Graph.DELIMITER |> name.Split |> List.ofArray
 
 module DFS =
 
@@ -29,7 +29,7 @@ module DFS =
     /// <summary>
     /// Tries to find a node by its ID in the graph using depth-first search.
     /// </summary>
-    /// <param name="nodeId">The ID of the node.</param>
+    /// <param name="nodeId">The Full ID of the node.</param>
     /// <param name="graph">The graph to search in.</param>
     /// <returns>The node if found, otherwise None.</returns>
     let rec tryFindById<'a when 'a :> Graph.INodeName> nodeId (graph: Graph.Node<'a>) =
@@ -59,7 +59,7 @@ module BFS =
     /// <summary>
     /// Tries to find a node by its ID in the graph using breadth-first search.
     /// </summary>
-    /// <param name="nodeId">The ID of the node.</param>
+    /// <param name="nodeId">The Full ID of the node.</param>
     /// <param name="graph">The graph to search in.</param>
     /// <returns>The node if found, otherwise None.</returns>
     let tryFindById<'a when 'a :> Graph.INodeName> nodeId graph =

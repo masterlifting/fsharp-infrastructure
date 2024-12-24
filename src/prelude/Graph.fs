@@ -22,7 +22,7 @@ module DFS =
     /// <param name="graph">The graph to search in.</param>
     /// <returns>The node if found, otherwise None.</returns>
     let rec tryFindByName<'a when 'a :> Graph.INodeName> name (graph: Graph.Node<'a>) =
-        match graph.FullName = name with
+        match graph.Name = name with
         | true -> Some graph
         | false -> graph.Children |> List.tryPick (tryFindByName name)
 
@@ -33,7 +33,7 @@ module DFS =
     /// <param name="graph">The graph to search in.</param>
     /// <returns>The node if found, otherwise None.</returns>
     let rec tryFindById<'a when 'a :> Graph.INodeName> nodeId (graph: Graph.Node<'a>) =
-        match graph.FullId = nodeId with
+        match graph.Id = nodeId with
         | true -> Some graph
         | false -> graph.Children |> List.tryPick (tryFindById nodeId)
 
@@ -50,7 +50,7 @@ module BFS =
             match nodes with
             | [] -> None
             | node :: tail ->
-                match node.FullName = name with
+                match node.Name = name with
                 | true -> Some node
                 | false -> search (tail @ node.Children)
 
@@ -67,7 +67,7 @@ module BFS =
             match nodes with
             | [] -> None
             | node :: tail ->
-                match node.FullId = nodeId with
+                match node.Id = nodeId with
                 | true -> Some node
                 | false -> search (tail @ node.Children)
 

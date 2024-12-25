@@ -8,10 +8,10 @@ let buildNodeName nodeName parentName =
     | None -> nodeName
     | Some parentName -> $"%s{parentName}%s{Graph.DELIMITER}%s{nodeName}"
 
-let buildNodeNameOfSeq data = data |> String.concat Graph.DELIMITER
+let combine values = values |> String.concat Graph.DELIMITER
 
-let split (name: string) =
-    Graph.DELIMITER |> name.Split |> List.ofArray
+let split (value: string) =
+    Graph.DELIMITER |> value.Split |> List.ofArray
 
 module DFS =
 

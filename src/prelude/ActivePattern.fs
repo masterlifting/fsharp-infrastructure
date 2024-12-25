@@ -2,6 +2,7 @@
 module Infrastructure.Prelude.AP
 
 open System
+open Infrastructure.Domain
 
 let (|IsString|_|) (input: string) =
     match String.IsNullOrWhiteSpace input with
@@ -42,3 +43,8 @@ let (|IsLettersOrNumbers|_|) (input: string) =
     match Text.RegularExpressions.Regex.IsMatch(input, "^[a-zA-Z0-9]+$") with
     | true -> Some input
     | _ -> None
+
+let (|Leaf|Node|) (input: Graph.Node<_>) =
+    match input.Children with
+    | [] -> Leaf input.Value
+    | _ -> Node input

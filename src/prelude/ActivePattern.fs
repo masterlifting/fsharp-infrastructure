@@ -39,6 +39,11 @@ let (|IsTimeOnly|_|) (input: string) =
     | true, value -> Some value
     | _ -> None
 
+let (|IsDateTime|_|) (input: string) =
+    match DateTime.TryParse input with
+    | true, value -> Some value
+    | _ -> None
+
 let (|IsLettersOrNumbers|_|) (input: string) =
     match Text.RegularExpressions.Regex.IsMatch(input, "^[a-zA-Z0-9]+$") with
     | true -> Some input

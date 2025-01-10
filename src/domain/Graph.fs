@@ -35,7 +35,9 @@ type Node<'a when 'a :> INodeName> =
 
     member this.Id = this.Value.Id
     member this.ShortId = DELIMITER |> this.Id.Value.Split |> Array.last |> NodeIdValue
-    member this.IdParts = DELIMITER |> this.Id.Value.Split |> List.ofArray |> List.map NodeIdValue
+
+    member this.IdParts =
+        DELIMITER |> this.Id.Value.Split |> List.ofArray |> List.map NodeIdValue
 
     member this.Name = this.Value.Name
     member this.ShortName = DELIMITER |> this.Name.Split |> Array.last

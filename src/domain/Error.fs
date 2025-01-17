@@ -53,7 +53,7 @@ type Error' =
         | NotImplemented src -> $"Not implemented -> %s{src}"
         | Canceled src -> $"Cancelled -> %s{src}"
 
-    member this.add msg =
+    member this.extend msg =
         match this with
         | Operation reason ->
             Operation

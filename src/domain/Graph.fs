@@ -21,12 +21,12 @@ type NodeId =
 
     static member New = Guid.NewGuid() |> string |> NodeIdValue
 
-type INodeName =
+type INode =
     abstract member Id: NodeId
     abstract member Name: string
-    abstract member set: NodeId * string -> INodeName
+    abstract member set: NodeId * string -> INode
 
-type Node<'a when 'a :> INodeName> =
+type Node<'a when 'a :> INode> =
     | Node of 'a * Node<'a> list
 
     member this.Value =

@@ -21,7 +21,7 @@ module DFS =
     /// <param name="name">The full name of the node.</param>
     /// <param name="graph">The graph to search in.</param>
     /// <returns>The node if found, otherwise None.</returns>
-    let rec tryFindByName<'a when 'a :> Graph.INodeName> name (graph: Graph.Node<'a>) =
+    let rec tryFindByName<'a when 'a :> Graph.INode> name (graph: Graph.Node<'a>) =
         match graph.Name = name with
         | true -> Some graph
         | false -> graph.Children |> List.tryPick (tryFindByName name)
@@ -32,7 +32,7 @@ module DFS =
     /// <param name="nodeId">The Full ID of the node.</param>
     /// <param name="graph">The graph to search in.</param>
     /// <returns>The node if found, otherwise None.</returns>
-    let rec tryFindById<'a when 'a :> Graph.INodeName> nodeId (graph: Graph.Node<'a>) =
+    let rec tryFindById<'a when 'a :> Graph.INode> nodeId (graph: Graph.Node<'a>) =
         match graph.Id = nodeId with
         | true -> Some graph
         | false -> graph.Children |> List.tryPick (tryFindById nodeId)
@@ -45,7 +45,7 @@ module BFS =
     /// <param name="name">The full name of the node.</param>
     /// <param name="graph">The graph to search in.</param>
     /// <returns>The node if found, otherwise None.</returns>
-    let tryFindByName<'a when 'a :> Graph.INodeName> name graph =
+    let tryFindByName<'a when 'a :> Graph.INode> name graph =
         let rec search (nodes: Graph.Node<'a> list) =
             match nodes with
             | [] -> None
@@ -62,7 +62,7 @@ module BFS =
     /// <param name="nodeId">The Full ID of the node.</param>
     /// <param name="graph">The graph to search in.</param>
     /// <returns>The node if found, otherwise None.</returns>
-    let tryFindById<'a when 'a :> Graph.INodeName> nodeId graph =
+    let tryFindById<'a when 'a :> Graph.INode> nodeId graph =
         let rec search (nodes: Graph.Node<'a> list) =
             match nodes with
             | [] -> None

@@ -3,11 +3,6 @@ module Infrastructure.Prelude.Graph
 
 open Infrastructure.Domain
 
-let buildNodeName nodeName parentName =
-    match parentName with
-    | None -> nodeName
-    | Some parentName -> $"%s{parentName}%s{Graph.DELIMITER}%s{nodeName}"
-
 let combine values = values |> String.concat Graph.DELIMITER
 
 let split (value: string) =

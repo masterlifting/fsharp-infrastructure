@@ -37,22 +37,6 @@ type Error' =
         | NotImplemented src -> $"Not implemented -> %s{src}"
         | Canceled src -> $"Cancelled -> %s{src}"
 
-    member this.MessageEx =
-        match this with
-        | Operation reason ->
-            match reason.Code with
-            | Some code -> $"Operation error -> %s{reason.Message} -> %A{code}"
-            | None -> $"Operation error -> %s{reason.Message}"
-        | Permission reason ->
-            match reason.Code with
-            | Some code -> $"Permission error -> %s{reason.Message} -> %A{code}"
-            | None -> $"Permission error -> %s{reason.Message}"
-        | AlreadyExists src -> $"Already exists -> %s{src}"
-        | NotFound src -> $"Not found -> %s{src}"
-        | NotSupported src -> $"Not supported -> %s{src}"
-        | NotImplemented src -> $"Not implemented -> %s{src}"
-        | Canceled src -> $"Cancelled -> %s{src}"
-
     member this.extend msg =
         match this with
         | Operation reason ->
@@ -86,9 +70,9 @@ type Error' =
         | _ ->
             let errors =
                 errors
-                |> Seq.mapi (fun i error -> $"%i{i}. %s{error.MessageEx}")
+                |> Seq.mapi (fun i error -> $"%i{i + 1}. %s{error.Message}")
                 |> String.concat Environment.NewLine
 
             Operation
-                { Message = $"%s{Environment.NewLine}Multiple errors occurred:%s{Environment.NewLine}%s{errors}"
+                { Message = $"Multiple errors:{Environment.NewLine}%s{errors}"
                   Code = None }

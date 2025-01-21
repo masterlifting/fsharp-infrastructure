@@ -36,8 +36,18 @@ type Error' =
         | NotSupported src -> $"Not supported -> %s{src}"
         | NotImplemented src -> $"Not implemented -> %s{src}"
         | Canceled src -> $"Cancelled -> %s{src}"
+    
+    member this.MessageOnly =
+        match this with
+        | Operation reason -> reason.Message
+        | Permission reason -> reason.Message
+        | AlreadyExists src -> src
+        | NotFound src -> src
+        | NotSupported src -> src
+        | NotImplemented src -> src
+        | Canceled src -> src
 
-    member this.extend msg =
+    member this.extendMsg msg =
         match this with
         | Operation reason ->
             Operation
@@ -53,7 +63,7 @@ type Error' =
         | NotImplemented src -> NotImplemented $"%s{src} -> %s{msg}"
         | Canceled src -> Canceled $"%s{src} -> %s{msg}"
 
-    member this.replace msg =
+    member this.replaceMsg msg =
         match this with
         | Operation reason -> Operation { reason with Message = msg }
         | Permission reason -> Permission { reason with Message = msg }

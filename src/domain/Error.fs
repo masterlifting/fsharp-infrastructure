@@ -80,7 +80,7 @@ type Error' =
         | _ ->
             let errors =
                 errors
-                |> Seq.mapi (fun i error -> $" - %i{i + 1}) %s{error.Message}")
+                |> Seq.mapi (fun i error -> $"   %i{i + 1}) %s{error.Message}")
                 |> String.concat Environment.NewLine
 
             Operation

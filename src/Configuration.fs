@@ -117,6 +117,9 @@ let private typeHandlersMap =
           typeof<TimeSpan>, (box TimeSpan.Zero, (fun (v: string) -> box (TimeSpan.Parse v)))
           typeof<Guid>, (box Guid.Empty, (fun (v: string) -> box (Guid.Parse v))) ]
 
+let private arrayRegexCache = System.Collections.Generic.Dictionary<string, Regex>()
+let private genericsRegexCache = System.Collections.Generic.Dictionary<string, Regex>()
+
 let private get<'a> key (section: IConfigurationSection) =
     let configMap =
         section.AsEnumerable()
@@ -140,7 +143,21 @@ let private get<'a> key (section: IConfigurationSection) =
         | true, (_, converter) -> converter value
         | _ -> Convert.ChangeType(value, t) |> box
 
-    //TODO: Improve the Regex initialization by using a cache
+    let inline getOrAddArrayRegex key =
+        match arrayRegexCache.TryGetValue key with
+        | true, regex -> regex
+        | _ ->
+            let regex = Regex($"{key}:(\\d+)$", RegexOptions.Compiled)
+            arrayRegexCache.Add(key, regex)
+            regex
+
+    let inline getOrAddGenericRegex key =
+        match genericsRegexCache.TryGetValue key with
+        | true, regex -> regex
+        | _ ->
+            let regex = Regex($"{key}:?\\w*$", RegexOptions.Compiled)
+            genericsRegexCache.Add(key, regex)
+            regex
 
     let rec getValue key type' =
         match type' with
@@ -150,7 +167,7 @@ let private get<'a> key (section: IConfigurationSection) =
             |> Option.map (fun v -> convertValue v valueType)
             |> Option.defaultValue (defaultValue valueType)
         | valueType when valueType.IsArray ->
-            let regex = Regex($"{key}:(\d+)$", RegexOptions.Compiled)
+            let regex = getOrAddArrayRegex key
 
             let indexes =
                 configMap.Keys
@@ -178,7 +195,7 @@ let private get<'a> key (section: IConfigurationSection) =
             valueType.IsGenericType
             && valueType.GetGenericTypeDefinition() = typedefof<Option<_>>
             ->
-            let regex = Regex($"{key}:?\\w*$", RegexOptions.Compiled)
+            let regex = getOrAddGenericRegex key
 
             configMap.Keys
             |> Seq.tryFind regex.IsMatch

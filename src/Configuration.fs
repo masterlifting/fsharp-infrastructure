@@ -117,8 +117,9 @@ let private typeHandlersMap =
           typeof<TimeSpan>, (box TimeSpan.Zero, (fun (v: string) -> box (TimeSpan.Parse v)))
           typeof<Guid>, (box Guid.Empty, (fun (v: string) -> box (Guid.Parse v))) ]
 
-let private arrayRegexCache = System.Collections.Generic.Dictionary<string, Regex>()
-let private genericsRegexCache = System.Collections.Generic.Dictionary<string, Regex>()
+let private arrayRegexCache = Collections.Generic.Dictionary<string, Regex>()
+
+let private genericsRegexCache = Collections.Generic.Dictionary<string, Regex>()
 
 let private get<'a> key (section: IConfigurationSection) =
     let configMap =

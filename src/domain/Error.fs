@@ -36,7 +36,7 @@ type Error' =
         | NotSupported src -> $"Not supported -> %s{src}"
         | NotImplemented src -> $"Not implemented -> %s{src}"
         | Canceled src -> $"Cancelled -> %s{src}"
-    
+
     member this.MessageOnly =
         match this with
         | Operation reason -> reason.Message

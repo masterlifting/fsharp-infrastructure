@@ -3,10 +3,17 @@ module Infrastructure.Prelude.Graph
 
 open Infrastructure.Domain
 
-let combine values = values |> String.concat Graph.DELIMITER
+module Node =
+    module Id =
+        let combine (nodeIds: Graph.NodeId seq) =
+            nodeIds |> Seq.map _.Value |> String.concat Graph.DELIMITER |> Graph.NodeIdValue
 
-let split (value: string) =
-    Graph.DELIMITER |> value.Split |> List.ofArray
+
+    module Name =
+        let combine (values: string seq) = values |> String.concat Graph.DELIMITER
+
+        let split (value: string) =
+            Graph.DELIMITER |> value.Split |> List.ofArray
 
 module DFS =
 

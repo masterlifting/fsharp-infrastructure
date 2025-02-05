@@ -49,7 +49,7 @@ type NodeId =
             |> NotFound
             |> Error
 
-    member private this.TryChooseRangeValues (startIndex: int) (length: int option) =
+    member private this.TryTakeRangeValues (startIndex: int) (length: int option) =
         let values = this.Split()
 
         match values.Length >= startIndex with
@@ -62,11 +62,11 @@ type NodeId =
                 | true -> Some(values[startIndex .. startIndex + len - 1])
                 | false -> None
 
-    member this.TryChooseRange (startIndex: int) (length: int option) =
-        this.TryChooseRangeValues startIndex length |> Option.map (List.map NodeIdValue)
+    member this.TryTakeRange (startIndex: int) (length: int option) =
+        this.TryTakeRangeValues startIndex length |> Option.map (List.map NodeIdValue)
 
-    member this.TryChoose (startIndex: int) (length: int option) =
-        this.TryChooseRange startIndex length
+    member this.TryTake (startIndex: int) (length: int option) =
+        this.TryTakeRange startIndex length
         |> Option.map (List.map _.Value)
         |> Option.map (String.concat DELIMITER)
         |> Option.map NodeIdValue

@@ -1,6 +1,7 @@
 ﻿[<AutoOpen>]
 module Infrastructure.SerDe
 
+open System.Runtime.Serialization
 open Infrastructure.Domain
 open Infrastructure.Prelude
 
@@ -19,7 +20,9 @@ module Json =
 
     let deserialize<'a> (data: string) =
         try
-            Ok <| JsonSerializer.Deserialize<'a> data
+            match JsonSerializer.Deserialize<'a> data with
+            | null -> raise <| SerializationException "Deserialization failed"
+            | value -> Ok value
         with ex ->
             Error
             <| Operation
@@ -28,7 +31,9 @@ module Json =
 
     let deserialize'<'a> (options: JsonSerializerOptions) (data: string) =
         try
-            Ok <| JsonSerializer.Deserialize<'a>(data, options)
+            match JsonSerializer.Deserialize<'a>(data, options) with
+            | null -> raise <| SerializationException "Deserialization failed"
+            | value -> Ok value
         with ex ->
             Error
             <| Operation

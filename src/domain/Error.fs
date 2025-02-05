@@ -11,7 +11,10 @@ type ErrorCode =
     member this.Value =
         match this with
         | Line(path, file, line) -> $"%s{path}\\%s{file}:%s{line}"
-        | Http code -> code |> Enum.GetName
+        | Http code ->
+            match code |> Enum.GetName with
+            | null -> $"%A{code}"
+            | name -> name
         | Custom value -> value
 
 type ErrorReason =

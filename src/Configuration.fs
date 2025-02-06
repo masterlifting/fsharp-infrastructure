@@ -44,7 +44,12 @@ module private Yaml =
                 | :? Dictionary<obj, obj> as dict ->
                     dict
                     |> Seq.iter (fun node ->
-                        let nodeName = nodeName |> buildNodeName <| node.Key.ToString()
+                        let nodeKey =
+                            match node.Key.ToString() with
+                            | null -> String.Empty
+                            | key -> key
+
+                        let nodeName = nodeName |> buildNodeName <| nodeKey
                         innerLoop nodeName node.Value)
 
                 | :? List<obj> as list ->
@@ -65,7 +70,7 @@ module private Yaml =
 
     let addFileWithOptions
         (builder: IConfigurationBuilder)
-        (provider: IFileProvider)
+        (provider: IFileProvider option)
         (path: string)
         (optional: bool)
         (reloadOnChange: bool)
@@ -73,15 +78,27 @@ module private Yaml =
 
         let provider, path =
             match provider, Path.IsPathRooted(path) with
-            | null, true ->
-                let directory = Path.GetDirectoryName(path)
-                let provider = new PhysicalFileProvider(directory) :> IFileProvider
-                provider, Path.GetFileName(path)
-            | _ -> provider, path
+            | None, true ->
 
+                let directory =
+                    match Path.GetDirectoryName(path) with
+                    | null -> failwith "Path.GetDirectoryName returned null"
+                    | directory -> directory
+
+                let provider = new PhysicalFileProvider(directory) :> IFileProvider |> Some
+                provider, Path.GetFileName(path)
+            | None, false -> None, path
+            | Some provider, _ -> Some provider, path
+
+
+        let fileProvider: IFileProvider | null =
+            match provider with
+            | Some provider -> provider
+            | None -> null
+            
         let source =
             ConfigurationSource(
-                FileProvider = provider,
+                FileProvider = fileProvider,
                 Path = path,
                 Optional = optional,
                 ReloadOnChange = reloadOnChange
@@ -90,7 +107,7 @@ module private Yaml =
         builder.Add <| source
 
     let addFile builder path =
-        addFileWithOptions builder null path false false
+        addFileWithOptions builder None path false false
 
 let private getJsonConfiguration fileName =
     let file = $"{fileName}.json"
@@ -110,12 +127,12 @@ let getJson = getJsonConfiguration
 
 let private typeHandlersMap =
     dict
-        [ typeof<bool>, (box false, (fun (v: string) -> box (Convert.ToBoolean v)))
-          typeof<int>, (box 0, (fun (v: string) -> box (Convert.ToInt32 v)))
-          typeof<float>, (box 0.0, (fun (v: string) -> box (Convert.ToDouble v)))
-          typeof<DateTime>, (box DateTime.MinValue, (fun (v: string) -> box (Convert.ToDateTime v)))
-          typeof<TimeSpan>, (box TimeSpan.Zero, (fun (v: string) -> box (TimeSpan.Parse v)))
-          typeof<Guid>, (box Guid.Empty, (fun (v: string) -> box (Guid.Parse v))) ]
+        [ typeof<bool>, (box false, (fun (v: string | null) -> box (Convert.ToBoolean v)))
+          typeof<int>, (box 0, (fun (v: string | null) -> box (Convert.ToInt32 v)))
+          typeof<float>, (box 0.0, (fun (v: string | null) -> box (Convert.ToDouble v)))
+          typeof<DateTime>, (box DateTime.MinValue, (fun (v: string | null) -> box (Convert.ToDateTime v)))
+          typeof<TimeSpan>, (box TimeSpan.Zero, (fun (v: string | null) -> box (TimeSpan.Parse v)))
+          typeof<Guid>, (box Guid.Empty, (fun (v: string | null) -> box (Guid.Parse v))) ]
 
 let private arrayRegexCache = Collections.Generic.Dictionary<string, Regex>()
 
@@ -139,7 +156,7 @@ let private get<'a> key (section: IConfigurationSection) =
         | true, (defaultValue, _) -> defaultValue
         | _ -> RuntimeHelpers.GetUninitializedObject t |> box
 
-    let inline convertValue (value: string) (t: Type) =
+    let inline convertValue (value: string | null) (t: Type) =
         match typeHandlersMap.TryGetValue t with
         | true, (_, converter) -> converter value
         | _ -> Convert.ChangeType(value, t) |> box
@@ -183,7 +200,11 @@ let private get<'a> key (section: IConfigurationSection) =
                 |> Array.ofSeq
                 |> Array.sort
 
-            let elementType = valueType.GetElementType()
+            let elementType =
+                match valueType.GetElementType() with
+                | null -> failwith "Array element type is null"
+                | elementType -> elementType
+
             let result = Array.CreateInstance(elementType, indexes.Length)
 
             indexes

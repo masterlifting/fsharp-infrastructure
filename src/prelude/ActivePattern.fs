@@ -4,10 +4,13 @@ module Infrastructure.Prelude.AP
 open System
 open Infrastructure.Domain
 
-let (|IsString|_|) (input: string) =
-    match String.IsNullOrWhiteSpace input with
-    | false -> Some input
-    | _ -> None
+let (|IsString|_|) (input: string | null) =
+    match input with
+    | null -> None
+    | value -> 
+        match String.IsNullOrWhiteSpace value with
+        | false -> Some value
+        | _ -> None
 
 let (|IsInt|_|) (input: string) =
     match Int32.TryParse input with

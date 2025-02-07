@@ -7,6 +7,12 @@ open Infrastructure.Domain
 [<Literal>]
 let internal DELIMITER = "."
 
+/// <summary>
+/// Represents a unique identifier for a node in a graph.
+/// </summary>
+/// <remarks>
+/// The value of a NodeId is a string that split into parts using a delimiter.
+/// </remarks>
 type NodeId =
     | NodeIdValue of string
 
@@ -24,6 +30,12 @@ type NodeId =
     member this.Split() =
         DELIMITER |> this.Value.Split |> List.ofArray
 
+    /// <summary>
+    /// Gets the part of the NodeId value at the specified index.
+    /// </summary>
+    /// <param name="index">
+    /// The index of the part to get.
+    /// </param>
     member this.TryGetPart index =
         let parts = this.Split()
 
@@ -71,15 +83,42 @@ type NodeId =
         |> Option.map (String.concat DELIMITER)
         |> Option.map NodeIdValue
 
+    /// <summary>
+    /// Determines whether the NodeId or any part of its value is contained in the specified id.
+    /// </summary>
+    /// <param name="id"> The id to check for containment. </param>
+    member this.Contains(id: NodeId) = this.Value.Contains id.Value
+
+    /// <summary>
+    /// Determines whether the NodeId or any part of its value is contained in one of the specified ids.
+    /// </summary>
+    /// <param name="ids">The ids to check for containment.</param>
+    member this.In(ids: NodeId list) = ids |> List.exists this.Contains
+
+/// <summary>
+/// Represents a node in a graph.
+/// </summary>
 type INode =
+    
+    /// <summary>
+    /// Gets the unique identifier of the node.
+    /// </summary>
+    /// <remarks>
+    /// The identifier is unique within the graph that split into parts using a delimiter.
+    /// </remarks>
     abstract member Id: NodeId
+    
+    /// <summary>
+    /// Gets the name of the node.
+    /// </summary>
+    /// <remarks>
+    /// The name is unique within the graph that split into parts using a delimiter.
+    /// </remarks>
     abstract member Name: string
     abstract member set: NodeId * string -> INode
 
 type Node<'a when 'a :> INode> =
     | Node of 'a * Node<'a> list
-
-
 
     member this.Value =
         match this with

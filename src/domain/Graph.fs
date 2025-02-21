@@ -93,7 +93,7 @@ type NodeId =
     /// Determines whether the NodeId or any part of its value is contained in one of the specified ids.
     /// </summary>
     /// <param name="ids">The ids to check for containment.</param>
-    member this.In(ids: NodeId list) = ids |> List.exists this.Contains
+    member this.In(ids: NodeId list) = ids |> List.exists (fun id -> id.Contains this)
 
 /// <summary>
 /// Represents a node in a graph.

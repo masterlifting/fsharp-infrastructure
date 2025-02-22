@@ -127,12 +127,12 @@ let getJson = getJsonConfiguration
 
 let private typeHandlersMap =
     dict
-        [ typeof<bool>, (box false, (fun (v: string | null) -> box (Convert.ToBoolean v)))
-          typeof<int>, (box 0, (fun (v: string | null) -> box (Convert.ToInt32 v)))
-          typeof<float>, (box 0.0, (fun (v: string | null) -> box (Convert.ToDouble v)))
-          typeof<DateTime>, (box DateTime.MinValue, (fun (v: string | null) -> box (Convert.ToDateTime v)))
-          typeof<TimeSpan>, (box TimeSpan.Zero, (fun (v: string | null) -> box (TimeSpan.Parse v)))
-          typeof<Guid>, (box Guid.Empty, (fun (v: string | null) -> box (Guid.Parse v))) ]
+        [ typeof<bool>, (false :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<bool>))
+          typeof<int>, (0 :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<int>))
+          typeof<float>, (0.0 :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<float>))
+          typeof<DateTime>, (DateTime.MinValue :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<DateTime>))
+          typeof<TimeSpan>, (TimeSpan.Zero :> obj, fun (v: string | null) -> TimeSpan.Parse v :> obj | null)
+          typeof<Guid>, (Guid.Empty :> obj, fun (v: string | null) -> Guid.Parse v :> obj | null) ]
 
 let private arrayRegexCache = Collections.Generic.Dictionary<string, Regex>()
 
@@ -154,7 +154,7 @@ let private get<'a> key (section: IConfigurationSection) =
     let inline defaultValue (t: Type) =
         match typeHandlersMap.TryGetValue t with
         | true, (defaultValue, _) -> defaultValue
-        | _ -> RuntimeHelpers.GetUninitializedObject t |> box
+        | _ -> RuntimeHelpers.GetUninitializedObject t
 
     let inline convertValue (value: string | null) (t: Type) =
         match typeHandlersMap.TryGetValue t with

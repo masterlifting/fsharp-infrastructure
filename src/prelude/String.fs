@@ -13,3 +13,8 @@ let fromDateTime (value: DateTime) =
 
 let addLines count =
     Seq.init count (fun _ -> Environment.NewLine) |> String.concat ""
+
+let toDefault (value: string | null) =
+    match value with
+    | null -> String.Empty
+    | v -> v

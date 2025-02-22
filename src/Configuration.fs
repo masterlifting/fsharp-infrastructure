@@ -131,8 +131,8 @@ let private typeHandlersMap =
           typeof<int>, (0 :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<int>))
           typeof<float>, (0.0 :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<float>))
           typeof<DateTime>, (DateTime.MinValue :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<DateTime>))
-          typeof<TimeSpan>, (TimeSpan.Zero :> obj, fun (v: string | null) -> TimeSpan.Parse v :> obj | null)
-          typeof<Guid>, (Guid.Empty :> obj, fun (v: string | null) -> Guid.Parse v :> obj | null) ]
+          typeof<TimeSpan>, (TimeSpan.Zero :> obj, fun (v: string | null) ->  TimeSpan.Parse (String.toDefault v))
+          typeof<Guid>, (Guid.Empty :> obj, fun (v: string | null) -> Guid.Parse (String.toDefault v)) ]
 
 let private arrayRegexCache = Collections.Generic.Dictionary<string, Regex>()
 

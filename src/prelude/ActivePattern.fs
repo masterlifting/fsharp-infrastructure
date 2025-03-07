@@ -7,7 +7,7 @@ open Infrastructure.Domain
 let (|IsString|_|) (input: string | null) =
     match input with
     | null -> None
-    | value -> 
+    | value ->
         match String.IsNullOrWhiteSpace value with
         | false -> Some value
         | _ -> None

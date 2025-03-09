@@ -1,5 +1,6 @@
 module Infrastructure.Logging
 
+open System
 open Infrastructure.Configuration
 
 type private Provider =
@@ -88,47 +89,44 @@ let private configLogger provider logLevel =
 
     match provider with
     | Console ->
-        let logMessage createMessage =
-            createMessage <| System.DateTime.Now.ToString("MM-dd HH:mm:ss") |> printfn
+
+        Console.OutputEncoding <- Text.Encoding.UTF8
+
+        let printMessage createMessage =
+            createMessage <| DateTime.Now.ToString("MM-dd HH:mm:ss") |> printfn
 
         let log level message =
-            match level with
-            | Critical ->
-                logMessage
-                <| fun timeStamp -> $"\u001b[31m[CRT %s{timeStamp}] %s{message}\u001b[0m"
-            | Warning ->
-                logMessage
-                <| fun timeStamp -> $"\u001b[33m[WRN %s{timeStamp}]\u001b[0m %s{message}"
-            | Debug ->
-                logMessage
-                <| fun timeStamp -> $"\u001b[35m[DBG %s{timeStamp}]\u001b[0m %s{message}"
-            | Trace ->
-                logMessage
-                <| fun timeStamp -> $"\u001b[90m[TRC %s{timeStamp}]\u001b[0m %s{message}"
-            | Success ->
-                logMessage
-                <| fun timeStamp -> $"\u001b[32m[SCS %s{timeStamp}] %s{message}\u001b[0m"
-            | _ ->
-                logMessage
-                <| fun timeStamp -> $"\u001b[36m[INF %s{timeStamp}]\u001b[0m %s{message}"
+            let color, prefix =
+                match level with
+                | Critical -> "31", "CRT"
+                | Warning -> "33", "WRN"
+                | Debug -> "35", "DBG"
+                | Trace -> "90", "TRC"
+                | Success -> "32", "SCS"
+                | _ -> "36", "INF"
+
+            printMessage
+            <| fun timeStamp -> $"\u001b[{color}m[%s{prefix} %s{timeStamp}] %s{message}\u001b[0m"
 
         logger <- Some(create level log)
 
     | File ->
 
-        let logMessage createMessage =
-            let message = createMessage <| System.DateTime.Now.ToString("MM-dd HH:mm:ss")
-
-            System.IO.File.AppendAllText("log.txt", message + System.Environment.NewLine)
+        let printMessage createMessage =
+            let message = createMessage <| DateTime.Now.ToString("MM-dd HH:mm:ss")
+            IO.File.AppendAllText("log.txt", message + Environment.NewLine)
 
         let log level message =
-            match level with
-            | Critical -> logMessage <| fun timeStamp -> $"[CRT %s{timeStamp}] %s{message}"
-            | Warning -> logMessage <| fun timeStamp -> $"[WRN %s{timeStamp}] %s{message}"
-            | Debug -> logMessage <| fun timeStamp -> $"[DBG %s{timeStamp}] %s{message}"
-            | Trace -> logMessage <| fun timeStamp -> $"[TRC %s{timeStamp}] %s{message}"
-            | Success -> logMessage <| fun timeStamp -> $"[SCS %s{timeStamp}] %s{message}"
-            | _ -> logMessage <| fun timeStamp -> $"[INF %s{timeStamp}] %s{message}"
+            let prefix =
+                match level with
+                | Critical -> "CRT"
+                | Warning -> "WRN"
+                | Debug -> "DBG"
+                | Trace -> "TRC"
+                | Success -> "SCS"
+                | _ -> "INF"
+
+            printMessage <| fun timeStamp -> $"[%s{prefix} %s{timeStamp}] %s{message}"
 
         logger <- Some(create level log)
 
@@ -160,19 +158,19 @@ let useFile configuration =
 [<RequireQualifiedAccess>]
 module Log =
     let trace msg =
-        logProcessor.Post <| fun logger' -> logger'.logTrace msg
+        logProcessor.Post <| fun l -> l.logTrace msg
 
     let debug msg =
-        logProcessor.Post <| fun logger' -> logger'.logDebug msg
+        logProcessor.Post <| fun l -> l.logDebug msg
 
     let info msg =
-        logProcessor.Post <| fun logger' -> logger'.logInfo msg
+        logProcessor.Post <| fun l -> l.logInfo msg
 
     let warning msg =
-        logProcessor.Post <| fun logger' -> logger'.logWarning msg
+        logProcessor.Post <| fun l -> l.logWarning msg
 
     let critical msg =
-        logProcessor.Post <| fun logger' -> logger'.logCritical msg
+        logProcessor.Post <| fun l -> l.logCritical msg
 
     let success msg =
-        logProcessor.Post <| fun logger' -> logger'.logSuccess msg
+        logProcessor.Post <| fun l -> l.logSuccess msg

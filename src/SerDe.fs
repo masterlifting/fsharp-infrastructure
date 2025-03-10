@@ -18,6 +18,15 @@ module Json =
                 { Message = ex |> Exception.toMessage
                   Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
 
+    let serialize' (options: JsonSerializerOptions) data =
+        try
+            Ok <| JsonSerializer.Serialize(data, options)
+        with ex ->
+            Error
+            <| Operation
+                { Message = ex |> Exception.toMessage
+                  Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
+
     let deserialize<'a> (data: string) =
         try
             match JsonSerializer.Deserialize<'a> data with

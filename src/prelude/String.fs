@@ -18,3 +18,6 @@ let toDefault (value: string | null) =
     match value with
     | null -> String.Empty
     | v -> v
+
+let toHash (value: string) =
+    value.GetHashCode().ToString()

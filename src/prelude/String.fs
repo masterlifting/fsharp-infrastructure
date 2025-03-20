@@ -21,17 +21,9 @@ let toDefault (value: string | null) =
     | v -> v
 
 let toDeterministicHash (value: string) =
-    use sha256 = SHA256.Create()
-
-    value
-    |> Text.Encoding.UTF8.GetBytes
-    |> sha256.ComputeHash
-    |> BitConverter.ToString
-    |> _.Replace("-", "").ToLower()
-
-let toDeterministicHash' (sha256: SHA256) (value: string) =
-    value
-    |> Text.Encoding.UTF8.GetBytes
-    |> sha256.ComputeHash
-    |> BitConverter.ToString
-    |> _.Replace("-", "").ToLower()
+    fun (algorithm: HashAlgorithm) ->
+        value
+        |> Text.Encoding.UTF8.GetBytes
+        |> algorithm.ComputeHash
+        |> BitConverter.ToString
+        |> _.Replace("-", "").ToLower()

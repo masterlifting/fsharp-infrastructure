@@ -2,6 +2,7 @@
 module Infrastructure.Prelude.String
 
 open System
+open System.Security.Cryptography
 
 let fromTimeSpan (value: TimeSpan) =
     let format = "dd\\.hh\\:mm\\:ss"
@@ -19,5 +20,18 @@ let toDefault (value: string | null) =
     | null -> String.Empty
     | v -> v
 
-let toHash (value: string) =
-    value.GetHashCode().ToString()
+let toDeterministicHash (value: string) =
+    use sha256 = SHA256.Create()
+
+    value
+    |> Text.Encoding.UTF8.GetBytes
+    |> sha256.ComputeHash
+    |> BitConverter.ToString
+    |> _.Replace("-", "").ToLower()
+
+let toDeterministicHash' (sha256: SHA256) (value: string) =
+    value
+    |> Text.Encoding.UTF8.GetBytes
+    |> sha256.ComputeHash
+    |> BitConverter.ToString
+    |> _.Replace("-", "").ToLower()

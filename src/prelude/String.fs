@@ -3,6 +3,7 @@ module Infrastructure.Prelude.String
 
 open System
 open System.Security.Cryptography
+open Infrastructure.Domain
 
 let fromTimeSpan (value: TimeSpan) =
     let format = "dd\\.hh\\:mm\\:ss"
@@ -22,8 +23,15 @@ let toDefault (value: string | null) =
 
 let toDeterministicHash (value: string) =
     fun (algorithm: HashAlgorithm) ->
-        value
-        |> Text.Encoding.UTF8.GetBytes
-        |> algorithm.ComputeHash
-        |> BitConverter.ToString
-        |> _.Replace("-", "").ToLower()
+        try
+            value
+            |> Text.Encoding.UTF8.GetBytes
+            |> algorithm.ComputeHash
+            |> BitConverter.ToString
+            |> _.Replace("-", "").ToLower()
+            |> Ok
+        with ex ->
+            Error
+            <| Operation
+                { Message = $"toDeterministicHash -> {ex |> Exception.toMessage}"
+                  Code = None }

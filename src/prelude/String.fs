@@ -21,7 +21,7 @@ let toDefault (value: string | null) =
     | null -> String.Empty
     | v -> v
 
-let toDeterministicHash (value: string) =
+let toHash (value: string) =
     fun (algorithm: HashAlgorithm) ->
         try
             value
@@ -33,5 +33,5 @@ let toDeterministicHash (value: string) =
         with ex ->
             Error
             <| Operation
-                { Message = $"toDeterministicHash -> {ex |> Exception.toMessage}"
+                { Message = $"Infrastructure.Prelude.String.toHash -> {ex |> Exception.toMessage}"
                   Code = None }

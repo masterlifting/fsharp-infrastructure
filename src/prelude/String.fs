@@ -35,3 +35,5 @@ let toHash (value: string) =
             <| Operation
                 { Message = $"Infrastructure.Prelude.String.toHash -> {ex |> Exception.toMessage}"
                   Code = None }
+
+let toSpan (value: string) = value.AsSpan()

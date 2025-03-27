@@ -34,21 +34,21 @@ type Error' =
         match this with
         | Operation reason -> $"Operation error -> %s{reason.Message}"
         | Permission reason -> $"Permission error -> %s{reason.Message}"
-        | AlreadyExists src -> $"Already exists -> %s{src}"
-        | NotFound src -> $"Not found -> %s{src}"
-        | NotSupported src -> $"Not supported -> %s{src}"
-        | NotImplemented src -> $"Not implemented -> %s{src}"
-        | Canceled src -> $"Cancelled -> %s{src}"
+        | AlreadyExists msg -> $"Already exists -> %s{msg}"
+        | NotFound msg -> $"Not found -> %s{msg}"
+        | NotSupported msg -> $"Not supported -> %s{msg}"
+        | NotImplemented msg -> $"Not implemented -> %s{msg}"
+        | Canceled msg -> $"Cancelled -> %s{msg}"
 
     member this.MessageOnly =
         match this with
         | Operation reason -> reason.Message
         | Permission reason -> reason.Message
-        | AlreadyExists src -> src
-        | NotFound src -> src
-        | NotSupported src -> src
-        | NotImplemented src -> src
-        | Canceled src -> src
+        | AlreadyExists msg -> msg
+        | NotFound msg -> msg
+        | NotSupported msg -> msg
+        | NotImplemented msg -> msg
+        | Canceled msg -> msg
 
     member this.extendMsg msg =
         match this with

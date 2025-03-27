@@ -95,7 +95,7 @@ module private Yaml =
             match provider with
             | Some provider -> provider
             | None -> null
-            
+
         let source =
             ConfigurationSource(
                 FileProvider = fileProvider,
@@ -112,9 +112,7 @@ module private Yaml =
 let private getJsonConfiguration fileName =
     let file = $"{fileName}.json"
 
-    ConfigurationBuilder()
-        .AddJsonFile(file, optional = false, reloadOnChange = true)
-        .Build()
+    ConfigurationBuilder().AddJsonFile(file, optional = false, reloadOnChange = true).Build()
 
 let private getYamlConfiguration fileName =
     let file = $"{fileName}.yaml"
@@ -130,9 +128,10 @@ let private typeHandlersMap =
         [ typeof<bool>, (false :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<bool>))
           typeof<int>, (0 :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<int>))
           typeof<float>, (0.0 :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<float>))
-          typeof<DateTime>, (DateTime.MinValue :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<DateTime>))
-          typeof<TimeSpan>, (TimeSpan.Zero :> obj, fun (v: string | null) ->  TimeSpan.Parse (String.toDefault v))
-          typeof<Guid>, (Guid.Empty :> obj, fun (v: string | null) -> Guid.Parse (String.toDefault v)) ]
+          typeof<DateTime>,
+          (DateTime.MinValue :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<DateTime>))
+          typeof<TimeSpan>, (TimeSpan.Zero :> obj, fun (v: string | null) -> TimeSpan.Parse(String.toDefault v))
+          typeof<Guid>, (Guid.Empty :> obj, fun (v: string | null) -> Guid.Parse(String.toDefault v)) ]
 
 let private arrayRegexCache = Collections.Generic.Dictionary<string, Regex>()
 

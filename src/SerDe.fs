@@ -30,7 +30,7 @@ module Json =
     let deserialize<'a> (data: string) =
         try
             match JsonSerializer.Deserialize<'a> data with
-            | null -> raise <| SerializationException "Deserialization failed"
+            | null -> raise <| SerializationException $"Deserialization failed for '%A{data}'."
             | value -> Ok value
         with ex ->
             Error
@@ -41,7 +41,7 @@ module Json =
     let deserialize'<'a> (options: JsonSerializerOptions) (data: string) =
         try
             match JsonSerializer.Deserialize<'a>(data, options) with
-            | null -> raise <| SerializationException "Deserialization failed"
+            | null -> raise <| SerializationException $"Deserialization failed for '%s{data}'."
             | value -> Ok value
         with ex ->
             Error

@@ -23,7 +23,7 @@ type NodeId =
     static member create(value: string) =
         match value |> String.IsNullOrWhiteSpace with
         | false -> NodeIdValue value |> Ok
-        | true -> $"NodeId value: {value}" |> NotSupported |> Error
+        | true -> $"NodeId value: '{value}'" |> NotSupported |> Error
 
     static member New = Guid.NewGuid() |> string |> NodeIdValue
 
@@ -57,9 +57,10 @@ type NodeId =
             |> NodeIdValue
             |> Ok
         | false ->
-            $"Index: {index} is out of range for NodeId parts: {this.Value}"
-            |> NotFound
-            |> Error
+            Error
+            <| Operation
+                { Message = $"The index '{index}' is out of range for NodeId parts '{this.Value}'."
+                  Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
 
     member private this.TryTakeRangeValues (startIndex: int) (length: int option) =
         let values = this.Split()

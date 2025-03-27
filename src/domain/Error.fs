@@ -32,13 +32,13 @@ type Error' =
 
     member this.Message =
         match this with
-        | Operation reason -> $"Operation error -> %s{reason.Message}"
-        | Permission reason -> $"Permission error -> %s{reason.Message}"
-        | AlreadyExists msg -> $"Already exists -> %s{msg}"
-        | NotFound msg -> $"Not found -> %s{msg}"
-        | NotSupported msg -> $"Not supported -> %s{msg}"
-        | NotImplemented msg -> $"Not implemented -> %s{msg}"
-        | Canceled msg -> $"Cancelled -> %s{msg}"
+        | Operation reason -> $"Operation error: %s{reason.Message}"
+        | Permission reason -> $"Permission error: %s{reason.Message}"
+        | AlreadyExists msg -> $"%s{msg} already exists."
+        | NotFound msg -> $"%s{msg} not found."
+        | NotSupported msg -> $"%s{msg} not supported."
+        | NotImplemented msg -> $"%s{msg} not implemented."
+        | Canceled msg -> $"%s{msg} cancelled."
 
     member this.MessageOnly =
         match this with
@@ -55,16 +55,16 @@ type Error' =
         | Operation reason ->
             Operation
                 { reason with
-                    Message = $"%s{reason.Message} -> %s{msg}" }
+                    Message = $"%s{reason.Message} %s{msg}" }
         | Permission reason ->
             Permission
                 { reason with
-                    Message = $"%s{reason.Message} -> %s{msg}" }
-        | AlreadyExists src -> AlreadyExists $"%s{src} -> %s{msg}"
-        | NotFound src -> NotFound $"%s{src} -> %s{msg}"
-        | NotSupported src -> NotSupported $"%s{src} -> %s{msg}"
-        | NotImplemented src -> NotImplemented $"%s{src} -> %s{msg}"
-        | Canceled src -> Canceled $"%s{src} -> %s{msg}"
+                    Message = $"%s{reason.Message} %s{msg}" }
+        | AlreadyExists msg -> AlreadyExists $"%s{msg} %s{msg}"
+        | NotFound msg -> NotFound $"%s{msg} %s{msg}"
+        | NotSupported msg -> NotSupported $"%s{msg} %s{msg}"
+        | NotImplemented msg -> NotImplemented $"%s{msg} %s{msg}"
+        | Canceled msg -> Canceled $"%s{msg} %s{msg}"
 
     member this.replaceMsg msg =
         match this with
@@ -78,7 +78,7 @@ type Error' =
 
     static member combine(errors: Error' list) =
         match errors.Length with
-        | 0 -> "Errors in the error list" |> NotFound
+        | 0 -> "Errors list" |> NotFound
         | 1 -> errors[0]
         | _ ->
             let errors =

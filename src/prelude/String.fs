@@ -33,7 +33,7 @@ let toHash (value: string) =
         with ex ->
             Error
             <| Operation
-                { Message = $"Infrastructure.Prelude.String.toHash -> {ex |> Exception.toMessage}"
-                  Code = None }
+                { Message = $"The hash calculation caused the error: {ex |> Exception.toMessage}"
+                  Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
 
 let toSpan (value: string) = value.AsSpan()

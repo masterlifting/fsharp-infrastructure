@@ -25,7 +25,7 @@ type NodeId =
         | false -> NodeIdValue value |> Ok
         | true -> $"NodeId value: '{value}'" |> NotSupported |> Error
 
-    static member New = Guid.NewGuid() |> string |> NodeIdValue
+    static member createNew() = Guid.NewGuid() |> string |> NodeIdValue
 
     member this.Split() =
         DELIMITER |> this.Value.Split |> List.ofArray

@@ -38,3 +38,6 @@ let toHash (value: string) =
             }
 
 let toSpan (value: string) = value.AsSpan()
+
+let has (pattern: string) (node: string) =
+    node.Contains(pattern, StringComparison.OrdinalIgnoreCase)

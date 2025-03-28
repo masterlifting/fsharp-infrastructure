@@ -46,9 +46,9 @@ let mapErrorAsync f asyncResult =
             let! err = f err
             return Error err
     }
-    
+
 let ignore asyncResult =
     async {
         let! _ = asyncResult
-        return Ok ()
+        return Ok()
     }

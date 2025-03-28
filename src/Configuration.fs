@@ -90,7 +90,6 @@ module private Yaml =
             | None, false -> None, path
             | Some provider, _ -> Some provider, path
 
-
         let fileProvider: IFileProvider | null =
             match provider with
             | Some provider -> provider

@@ -8,7 +8,6 @@ module Node =
         let combine (nodeIds: Graph.NodeId seq) =
             nodeIds |> Seq.map _.Value |> String.concat Graph.DELIMITER |> Graph.NodeIdValue
 
-
     module Name =
         let combine (values: string seq) = values |> String.concat Graph.DELIMITER
 

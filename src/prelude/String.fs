@@ -32,8 +32,9 @@ let toHash (value: string) =
             |> Ok
         with ex ->
             Error
-            <| Operation
-                { Message = $"The hash calculation caused the error: {ex |> Exception.toMessage}"
-                  Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
+            <| Operation {
+                Message = $"The hash calculation caused the error: {ex |> Exception.toMessage}"
+                Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some
+            }
 
 let toSpan (value: string) = value.AsSpan()

@@ -58,9 +58,10 @@ type NodeId =
             |> Ok
         | false ->
             Error
-            <| Operation
-                { Message = $"The index '{index}' is out of range for NodeId parts '{this.Value}'."
-                  Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some }
+            <| Operation {
+                Message = $"The index '{index}' is out of range for NodeId parts '{this.Value}'."
+                Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some
+            }
 
     member private this.TryTakeRangeValues (startIndex: int) (length: int option) =
         let values = this.Split()

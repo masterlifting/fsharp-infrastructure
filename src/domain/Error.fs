@@ -17,9 +17,10 @@ type ErrorCode =
             | name -> name
         | Custom value -> value
 
-type ErrorReason =
-    { Message: string
-      Code: ErrorCode option }
+type ErrorReason = {
+    Message: string
+    Code: ErrorCode option
+}
 
 type Error' =
     | Operation of ErrorReason
@@ -53,13 +54,15 @@ type Error' =
     member this.extendMsg msg =
         match this with
         | Operation reason ->
-            Operation
-                { reason with
-                    Message = $"%s{reason.Message} %s{msg}" }
+            Operation {
+                reason with
+                    Message = $"%s{reason.Message} %s{msg}"
+            }
         | Permission reason ->
-            Permission
-                { reason with
-                    Message = $"%s{reason.Message} %s{msg}" }
+            Permission {
+                reason with
+                    Message = $"%s{reason.Message} %s{msg}"
+            }
         | AlreadyExists msg -> AlreadyExists $"%s{msg} %s{msg}"
         | NotFound msg -> NotFound $"%s{msg} %s{msg}"
         | NotSupported msg -> NotSupported $"%s{msg} %s{msg}"
@@ -86,6 +89,7 @@ type Error' =
                 |> Seq.mapi (fun i error -> $"   %i{i + 1}) %s{error.Message}")
                 |> String.concat Environment.NewLine
 
-            Operation
-                { Message = $"Multiple errors:{Environment.NewLine}%s{errors}"
-                  Code = None }
+            Operation {
+                Message = $"Multiple errors:{Environment.NewLine}%s{errors}"
+                Code = None
+            }

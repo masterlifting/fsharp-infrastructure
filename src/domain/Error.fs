@@ -71,7 +71,7 @@ type Error' =
 
     static member combine(errors: Error' list) =
         match errors.Length with
-        | 0 -> "Errors list" |> NotFound
+        | 0 -> "Errors list not found." |> NotFound
         | 1 -> errors[0]
         | _ ->
             let errors =

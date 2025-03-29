@@ -53,11 +53,11 @@ type Error' =
                 reason with
                     Message = reason.Message + value
             }
-        | AlreadyExists msg -> AlreadyExists (msg + value)
-        | NotFound msg -> NotFound (msg + value)
-        | NotSupported msg -> NotSupported (msg + value)
-        | NotImplemented msg -> NotImplemented (msg + value)
-        | Canceled msg -> Canceled (msg + value)
+        | AlreadyExists msg -> AlreadyExists(msg + value)
+        | NotFound msg -> NotFound(msg + value)
+        | NotSupported msg -> NotSupported(msg + value)
+        | NotImplemented msg -> NotImplemented(msg + value)
+        | Canceled msg -> Canceled(msg + value)
 
     member this.ReplaceMsg msg =
         match this with

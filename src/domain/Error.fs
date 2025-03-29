@@ -33,16 +33,6 @@ type Error' =
 
     member this.Message =
         match this with
-        | Operation reason -> $"Operation error: %s{reason.Message}"
-        | Permission reason -> $"Permission error: %s{reason.Message}"
-        | AlreadyExists msg -> $"%s{msg} already exists."
-        | NotFound msg -> $"%s{msg} not found."
-        | NotSupported msg -> $"%s{msg} not supported."
-        | NotImplemented msg -> $"%s{msg} not implemented."
-        | Canceled msg -> $"%s{msg} cancelled."
-
-    member this.MessageOnly =
-        match this with
         | Operation reason -> reason.Message
         | Permission reason -> reason.Message
         | AlreadyExists msg -> msg
@@ -51,25 +41,25 @@ type Error' =
         | NotImplemented msg -> msg
         | Canceled msg -> msg
 
-    member this.extendMsg msg =
+    member this.ExtendMsg value =
         match this with
         | Operation reason ->
             Operation {
                 reason with
-                    Message = $"%s{reason.Message} %s{msg}"
+                    Message = reason.Message + value
             }
         | Permission reason ->
             Permission {
                 reason with
-                    Message = $"%s{reason.Message} %s{msg}"
+                    Message = reason.Message + value
             }
-        | AlreadyExists msg -> AlreadyExists $"%s{msg} %s{msg}"
-        | NotFound msg -> NotFound $"%s{msg} %s{msg}"
-        | NotSupported msg -> NotSupported $"%s{msg} %s{msg}"
-        | NotImplemented msg -> NotImplemented $"%s{msg} %s{msg}"
-        | Canceled msg -> Canceled $"%s{msg} %s{msg}"
+        | AlreadyExists msg -> AlreadyExists (msg + value)
+        | NotFound msg -> NotFound (msg + value)
+        | NotSupported msg -> NotSupported (msg + value)
+        | NotImplemented msg -> NotImplemented (msg + value)
+        | Canceled msg -> Canceled (msg + value)
 
-    member this.replaceMsg msg =
+    member this.ReplaceMsg msg =
         match this with
         | Operation reason -> Operation { reason with Message = msg }
         | Permission reason -> Permission { reason with Message = msg }

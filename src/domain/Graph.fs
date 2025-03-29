@@ -23,7 +23,7 @@ type NodeId =
     static member create(value: string) =
         match value |> String.IsNullOrWhiteSpace with
         | false -> NodeIdValue value |> Ok
-        | true -> $"NodeId value: '{value}'" |> NotSupported |> Error
+        | true -> $"NodeId value '{value}' is not supported." |> NotSupported |> Error
 
     static member createNew() = Guid.NewGuid() |> string |> NodeIdValue
 

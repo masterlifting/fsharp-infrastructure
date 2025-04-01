@@ -27,9 +27,11 @@ let (|IsGuid|_|) (input: string) =
     | true, value -> Some value
     | _ -> None
 
-let (|IsUUID16|_|) (input: string) = input |> UUID16.parse
+let (|IsUUID16|_|) (input: string) =
+    input |> validateUUID 16 |> Option.map UUID16
 
-let (|IsUUID32|_|) (input: string) = input |> UUID32.parse
+let (|IsUUID32|_|) (input: string) =
+    input |> validateUUID 32 |> Option.map UUID32
 
 let (|IsTimeSpan|_|) (input: string) =
     match TimeSpan.TryParse input with

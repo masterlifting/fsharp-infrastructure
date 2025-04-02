@@ -41,7 +41,7 @@ type Error' =
         | NotImplemented msg -> msg
         | Canceled msg -> msg
 
-    member this.ExtendMsg value =
+    member this.Extend value =
         match this with
         | Operation reason ->
             Operation {
@@ -59,7 +59,7 @@ type Error' =
         | NotImplemented msg -> NotImplemented(msg + value)
         | Canceled msg -> Canceled(msg + value)
 
-    member this.ReplaceMsg msg =
+    member this.Replace msg =
         match this with
         | Operation reason -> Operation { reason with Message = msg }
         | Permission reason -> Permission { reason with Message = msg }

@@ -9,6 +9,7 @@
     <Compile Include="domain\Identifier.fs" />
     <Compile Include="domain\Graph.fs" />
     <Compile Include="domain\Culture.fs" />
+    <Compile Include="domain\Measures.fs" />
     <Compile Include="prelude\Exception.fs" />
     <Compile Include="prelude\Threading.fs" />
     <Compile Include="prelude\Async.fs" />

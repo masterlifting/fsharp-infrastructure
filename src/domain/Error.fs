@@ -58,7 +58,6 @@ type Error' =
         | NotSupported msg -> NotSupported(msg + value)
         | NotImplemented msg -> NotImplemented(msg + value)
         | Canceled msg -> Canceled(msg + value)
-        |> Error
 
     member this.Replace msg =
         match this with
@@ -69,7 +68,6 @@ type Error' =
         | NotSupported _ -> NotSupported msg
         | NotImplemented _ -> NotImplemented msg
         | Canceled _ -> Canceled msg
-        |> Error
 
     static member combine(errors: Error' list) =
         match errors.Length with
@@ -85,4 +83,3 @@ type Error' =
                 Message = $"Multiple errors:{Environment.NewLine}%s{errors}"
                 Code = None
             }
-        |> Error

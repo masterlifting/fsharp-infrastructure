@@ -37,7 +37,5 @@ let toHash (value: string) =
                 Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some
             }
 
-let toSpan (value: string) = value.AsSpan()
-
-let has (pattern: string) (node: string) =
-    node.Contains(pattern, StringComparison.OrdinalIgnoreCase)
+let has (pattern: string) (value: string) =
+    value.Contains(pattern, StringComparison.OrdinalIgnoreCase)

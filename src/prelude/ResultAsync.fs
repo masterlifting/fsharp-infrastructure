@@ -47,8 +47,8 @@ let mapErrorAsync f asyncResult =
             return Error err
     }
 
-let ignore asyncResult =
+let defaultWith f asyncResult =
     async {
-        let! _ = asyncResult
-        return Ok()
+        let! result = asyncResult
+        return Result.defaultWith f result
     }

@@ -8,8 +8,6 @@ open Microsoft.FSharp.Reflection
 open Infrastructure.Domain
 open Infrastructure.Prelude
 
-[<AutoOpen>]
-
 module private Yaml =
     open System.IO
     open System.Collections.Generic
@@ -108,19 +106,38 @@ module private Yaml =
     let addFile builder path =
         addFileWithOptions builder None path false false
 
-let private getJsonConfiguration fileName =
-    let file = $"{fileName}.json"
+let private addJsonFile fileName (builder: IConfigurationBuilder) =
+    let file = $"%s{fileName}.json"
+    builder.AddJsonFile(file, optional = false, reloadOnChange = true)
 
-    ConfigurationBuilder().AddJsonFile(file, optional = false, reloadOnChange = true).Build()
+let private addYamlFile fileName builder =
+    let file = $"%s{fileName}.yaml"
+    builder |> Yaml.addFile <| file
 
-let private getYamlConfiguration fileName =
-    let file = $"{fileName}.yaml"
-    let builder = ConfigurationBuilder()
-    let builder = builder |> addFile <| file
+let private setJsonConfiguration fileName =
+    let builder = ConfigurationBuilder() |> addJsonFile fileName
     builder.Build()
 
-let getYaml = getYamlConfiguration
-let getJson = getJsonConfiguration
+let private setYamlConfiguration fileName =
+    let builder = ConfigurationBuilder() |> addYamlFile fileName
+    builder.Build()
+
+let setYaml = setYamlConfiguration
+
+let setYamls fileNames =
+    let builder = ConfigurationBuilder()
+
+    fileNames
+    |> Seq.fold (fun builder fileName -> builder |> addYamlFile fileName) builder
+    |> _.Build()
+let setJson = setJsonConfiguration
+
+let setJsons fileNames =
+    let builder = ConfigurationBuilder()
+
+    fileNames
+    |> Seq.fold (fun builder fileName -> builder |> addJsonFile fileName) builder
+    |> _.Build()
 
 let private typeHandlersMap =
     dict [

@@ -113,7 +113,7 @@ let private configLogger provider logLevel =
                 | _ -> "36", "INF"
 
             printMessage
-            <| fun timeStamp -> $"\u001b[{color}m[%s{prefix} %s{timeStamp}] %s{message}\u001b[0m"
+            <| fun timeStamp -> $"\u001b[{color}m[%s{prefix} %s{timeStamp}]\u001b[0m %s{message}"
 
         logger <- Some(create level log)
 

@@ -164,20 +164,20 @@ let useFile configuration =
 
 [<RequireQualifiedAccess>]
 module Log =
-    let trace msg =
+    let trc msg =
         logProcessor.Post <| fun l -> l.logTrace msg
 
-    let debug msg =
+    let dbg msg =
         logProcessor.Post <| fun l -> l.logDebug msg
 
-    let info msg =
+    let inf msg =
         logProcessor.Post <| fun l -> l.logInfo msg
 
-    let warning msg =
+    let wrn msg =
         logProcessor.Post <| fun l -> l.logWarning msg
 
-    let critical msg =
+    let crt msg =
         logProcessor.Post <| fun l -> l.logCritical msg
 
-    let success msg =
+    let scs msg =
         logProcessor.Post <| fun l -> l.logSuccess msg

@@ -115,7 +115,7 @@ type Node<'a when 'a :> INode> =
     member this.Id = this.Value.Id
     member this.ShortId = DELIMITER |> this.Id.Value.Split |> Array.last |> NodeIdValue
 
-    member private this.GetChildren (id: NodeId) =
+    member private this.GetChildren(id: NodeId) =
         match this with
         | Node(_, children) ->
             children

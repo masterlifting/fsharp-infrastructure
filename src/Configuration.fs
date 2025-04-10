@@ -106,13 +106,10 @@ module private Yaml =
     let addFile builder path =
         addFileWithOptions builder None path false false
 
-let private addJsonFile fileName (builder: IConfigurationBuilder) =
-    let file = $"%s{fileName}.json"
-    builder.AddJsonFile(file, optional = false, reloadOnChange = true)
+let private addJsonFile name (builder: IConfigurationBuilder) =
+    builder.AddJsonFile(name, optional = false, reloadOnChange = true)
 
-let private addYamlFile fileName builder =
-    let file = $"%s{fileName}.yaml"
-    builder |> Yaml.addFile <| file
+let private addYamlFile name builder = builder |> Yaml.addFile <| name
 
 let private setJsonConfiguration fileName =
     let builder = ConfigurationBuilder() |> addJsonFile fileName
@@ -124,19 +121,19 @@ let private setYamlConfiguration fileName =
 
 let setYaml = setYamlConfiguration
 
-let setYamls fileNames =
+let setYamls names =
     let builder = ConfigurationBuilder()
 
-    fileNames
-    |> Seq.fold (fun builder fileName -> builder |> addYamlFile fileName) builder
+    names
+    |> Seq.fold (fun builder name -> builder |> addYamlFile name) builder
     |> _.Build()
 let setJson = setJsonConfiguration
 
-let setJsons fileNames =
+let setJsons names =
     let builder = ConfigurationBuilder()
 
-    fileNames
-    |> Seq.fold (fun builder fileName -> builder |> addJsonFile fileName) builder
+    names
+    |> Seq.fold (fun builder name -> builder |> addJsonFile name) builder
     |> _.Build()
 
 let private typeHandlersMap =

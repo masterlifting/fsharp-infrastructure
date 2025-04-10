@@ -102,23 +102,8 @@ type NodeId =
 /// Represents a node in a graph.
 /// </summary>
 type INode =
-
-    /// <summary>
-    /// Gets the unique identifier of the node.
-    /// </summary>
-    /// <remarks>
-    /// The identifier is unique within the graph that split into parts using a delimiter.
-    /// </remarks>
     abstract member Id: NodeId
-
-    /// <summary>
-    /// Gets the name of the node.
-    /// </summary>
-    /// <remarks>
-    /// The name is unique within the graph that split into parts using a delimiter.
-    /// </remarks>
-    abstract member Name: string
-    abstract member set: NodeId * string -> INode
+    abstract member set: NodeId -> INode
 
 type Node<'a when 'a :> INode> =
     | Node of 'a * Node<'a> list
@@ -130,18 +115,14 @@ type Node<'a when 'a :> INode> =
     member this.Id = this.Value.Id
     member this.ShortId = DELIMITER |> this.Id.Value.Split |> Array.last |> NodeIdValue
 
-    member this.Name = this.Value.Name
-    member this.ShortName = DELIMITER |> this.Name.Split |> Array.last
-
-    member private this.GetChildren(id: NodeId, name) =
+    member private this.GetChildren (id: NodeId) =
         match this with
         | Node(_, children) ->
             children
             |> List.map (fun node ->
                 let id = [ id.Value; node.Id.Value ] |> String.concat DELIMITER |> NodeIdValue
-                let name = [ name; node.Name ] |> String.concat DELIMITER
 
-                let value = (id, name) |> node.Value.set :?> 'a
+                let value = id |> node.Value.set :?> 'a
 
                 let children =
                     match node with
@@ -149,4 +130,4 @@ type Node<'a when 'a :> INode> =
 
                 Node(value, children))
 
-    member this.Children = (this.Id, this.Name) |> this.GetChildren
+    member this.Children = this.Id |> this.GetChildren

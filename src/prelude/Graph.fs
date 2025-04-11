@@ -31,10 +31,10 @@ module DFS =
     /// <param name="nodeId">Id of the node.</param>
     /// <param name="graph">The graph to search in.</param>
     /// <returns>The node if found, otherwise None.</returns>
-    let rec tryFindById<'a when 'a :> Graph.INode> nodeId (graph: Graph.Node<'a>) =
+    let rec tryFind<'a when 'a :> Graph.INode> nodeId (graph: Graph.Node<'a>) =
         match graph.Id = nodeId with
         | true -> Some graph
-        | false -> graph.Children |> List.tryPick (tryFindById nodeId)
+        | false -> graph.Children |> List.tryPick (tryFind nodeId)
 
 /// <summary>
 /// Represents breadth-first search (BFS) graph algorithms.
@@ -47,7 +47,7 @@ module BFS =
     /// <param name="nodeId">Id of the node.</param>
     /// <param name="graph">The graph to search in.</param>
     /// <returns>The node if found, otherwise None.</returns>
-    let tryFindById<'a when 'a :> Graph.INode> nodeId graph =
+    let tryFind<'a when 'a :> Graph.INode> nodeId graph =
         let rec search (nodes: Graph.Node<'a> list) =
             match nodes with
             | [] -> None

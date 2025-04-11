@@ -22,6 +22,13 @@
     <Compile Include="prelude\String.fs" />
     <Compile Include="prelude\ActivePattern.fs" />
     <Compile Include="prelude\ComputationExpression.fs" />
+    <Compile Include="configuration\providers\yaml\Domain.fs" />
+    <Compile Include="configuration\providers\yaml\Builder.fs" />
+    <Compile Include="configuration\providers\yaml\Provider.fs" />
+    <Compile Include="configuration\providers\json\Domain.fs" />
+    <Compile Include="configuration\providers\json\Provider.fs" />
+    <Compile Include="configuration\Parser.fs" />
+    <Compile Include="configuration\Client.fs" />
     <Compile Include="SerDe.fs" />
     <Compile Include="Parser.fs" />
     <Compile Include="Configuration.fs" />

@@ -5,7 +5,7 @@ open System
 open Infrastructure.Domain
 
 [<Literal>]
-let internal DELIMITER = "."
+let private DELIMITER = "."
 
 /// <summary>
 /// Represents a unique identifier for a node in a graph.
@@ -26,6 +26,12 @@ type NodeId =
         | true -> $"NodeId value '{value}' is not supported." |> NotSupported |> Error
 
     static member createNew() = Guid.NewGuid() |> string |> NodeIdValue
+
+    static member combine(nodeIds: NodeId seq) =
+        nodeIds |> Seq.map _.Value |> String.concat DELIMITER |> NodeIdValue
+
+    static member split(value: NodeId) =
+        DELIMITER |> value.Value.Split |> List.ofArray |> Seq.map NodeIdValue
 
     member this.Split() =
         DELIMITER |> this.Value.Split |> List.ofArray

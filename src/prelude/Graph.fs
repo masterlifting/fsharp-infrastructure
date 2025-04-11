@@ -3,23 +3,6 @@ module Infrastructure.Prelude.Graph
 
 open Infrastructure.Domain
 
-module Node =
-    module Id =
-        let combine (nodeIds: Graph.NodeId seq) =
-            nodeIds |> Seq.map _.Value |> String.concat Graph.DELIMITER |> Graph.NodeIdValue
-
-        let split (value: Graph.NodeId) =
-            Graph.DELIMITER
-            |> value.Value.Split
-            |> List.ofArray
-            |> Seq.map Graph.NodeIdValue
-
-    module Name =
-        let combine (values: string seq) = values |> String.concat Graph.DELIMITER
-
-        let split (value: string) =
-            Graph.DELIMITER |> value.Split |> List.ofArray
-
 /// <summary>
 /// Represents Depth-first search (DFS) graph algorithms.
 /// </summary>

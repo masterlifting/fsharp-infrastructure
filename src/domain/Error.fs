@@ -68,18 +68,3 @@ type Error' =
         | NotSupported _ -> NotSupported msg
         | NotImplemented _ -> NotImplemented msg
         | Canceled _ -> Canceled msg
-
-    static member combine(errors: Error' list) =
-        match errors.Length with
-        | 0 -> "Errors list not found." |> NotFound
-        | 1 -> errors[0]
-        | _ ->
-            let errors =
-                errors
-                |> Seq.mapi (fun i error -> $"   %i{i + 1}) %s{error.Message}")
-                |> String.concat Environment.NewLine
-
-            Operation {
-                Message = $"Multiple errors:{Environment.NewLine}%s{errors}"
-                Code = None
-            }

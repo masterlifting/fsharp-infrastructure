@@ -1,19 +1,20 @@
 ﻿module Infrastructure.Configuration.Providers.Yaml.Provider
 
-open System
-open System.Collections.Concurrent
+open Microsoft.Extensions.Configuration
 open Infrastructure.Domain
-open Infrastructure.Configuration.Providers.Domain.Yaml
+open Infrastructure.Configuration.Domain
+open Infrastructure.Configuration.Providers.Builder
 
-
-let init connection =
+let init (connection: Connection) =
     try
-        Ok
-        <| {
-               Provider = 
-           }
+        let builder = ConfigurationBuilder()
+        connection.Files
+        |> Seq.fold (fun builder file -> builder |> Yaml.addFile file) builder
+        |> _.Build()
+        |> Ok
     with ex ->
         Error
         <| Operation {
             Message = ex.Message
             Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some
+        }

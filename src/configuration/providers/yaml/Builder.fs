@@ -1,4 +1,4 @@
-﻿module Infrastructure.Configuration.Providers.Builder.Yaml
+﻿module internal Infrastructure.Configuration.Providers.Builder.Yaml
 
 open System
 open System.IO
@@ -96,5 +96,5 @@ let private addFileWithOptions
 
     builder.Add <| source
 
-let addFile builder path =
-    addFileWithOptions builder None path false false
+let addFile file builder =
+    addFileWithOptions builder None file false false

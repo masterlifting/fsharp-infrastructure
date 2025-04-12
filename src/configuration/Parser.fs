@@ -21,7 +21,7 @@ let private arrayRegexCache = Collections.Generic.Dictionary<string, Regex>()
 
 let private genericsRegexCache = Collections.Generic.Dictionary<string, Regex>()
 
-let private parse<'a> key (section: IConfigurationSection) =
+let parse<'a> key (section: IConfigurationSection) =
     let configMap =
         section.AsEnumerable()
         |> Seq.map (fun x ->

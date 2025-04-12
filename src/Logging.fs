@@ -1,8 +1,6 @@
 module Infrastructure.Logging
 
 open System
-open Infrastructure.Configuration
-
 type private Provider =
     | Console
     | File
@@ -157,10 +155,10 @@ let private logProcessor =
 let private sectionName = "Logging:LogLevel:Default"
 
 let useConsole configuration =
-    configuration |> getSection<string> sectionName |> configLogger Console
+    configuration |> Configuration.Client.tryGetSection<string> sectionName |> configLogger Console
 
 let useFile configuration =
-    configuration |> getSection<string> sectionName |> configLogger File
+    configuration |> Configuration.Client.tryGetSection<string> sectionName |> configLogger File
 
 [<RequireQualifiedAccess>]
 module Log =

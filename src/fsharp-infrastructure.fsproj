@@ -29,9 +29,14 @@
     <Compile Include="configuration\providers\json\Provider.fs" />
     <Compile Include="configuration\Parser.fs" />
     <Compile Include="configuration\Client.fs" />
+    <Compile Include="logging\providers\Domain.fs" />
+    <Compile Include="logging\providers\Builder.fs" />
+    <Compile Include="logging\providers\file\Provider.fs" />
+    <Compile Include="logging\providers\console\Provider.fs" />
+    <Compile Include="logging\Client.fs" />
+    <Compile Include="logging\Log.fs" />
     <Compile Include="SerDe.fs" />
     <Compile Include="Parser.fs" />
-    <Compile Include="Logging.fs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

@@ -41,14 +41,17 @@ let toHash (value: string) =
                 Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some
             }
 
-let private generateSalt (key: int) = BitConverter.GetBytes(key) |> Array.rev
-
-let encrypt (key: int) (value: string) =
+let encrypt (key: string) (plaintext: string) =
     try
-        let salt = generateSalt key
-        let bytes = Encoding.UTF8.GetBytes(value)
-        let encryptedBytes = bytes |> Array.mapi (fun i b -> b ^^^ salt[i % salt.Length])
-        Convert.ToBase64String(encryptedBytes) |> Ok
+        let keyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(key))
+        use aes = new AesGcm(keyBytes, 16) // Specify tag size of 16 bytes
+        let nonce = RandomNumberGenerator.GetBytes(12)
+        let plaintextBytes = Encoding.UTF8.GetBytes(plaintext)
+        let ciphertext = Array.zeroCreate<byte> plaintextBytes.Length
+        let tag = Array.zeroCreate<byte> 16
+        aes.Encrypt(nonce, plaintextBytes, ciphertext, tag)
+        let combined = Array.concat [nonce; tag; ciphertext]
+        Convert.ToBase64String(combined) |> Ok
     with ex ->
         Error
         <| Operation {
@@ -56,13 +59,17 @@ let encrypt (key: int) (value: string) =
             Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some
         }
 
-let decrypt (key: int) (value: string) =
+let decrypt (key: string) (encrypted: string) =
     try
-        let salt = generateSalt key
-        let encryptedBytes = Convert.FromBase64String(value)
-        let decryptedBytes =
-            encryptedBytes |> Array.mapi (fun i b -> b ^^^ salt[i % salt.Length])
-        Encoding.UTF8.GetString(decryptedBytes) |> Ok
+        let keyBytes = SHA256.HashData(Encoding.UTF8.GetBytes(key))
+        use aes = new AesGcm(keyBytes, 16) // Specify tag size of 16 bytes
+        let combined = Convert.FromBase64String(encrypted)
+        let nonce = combined.[..11]
+        let tag = combined.[12..27]
+        let ciphertext = combined.[28..]
+        let plaintextBytes = Array.zeroCreate<byte> ciphertext.Length
+        aes.Decrypt(nonce, ciphertext, tag, plaintextBytes)
+        Encoding.UTF8.GetString(plaintextBytes) |> Ok
     with ex ->
         Error
         <| Operation {

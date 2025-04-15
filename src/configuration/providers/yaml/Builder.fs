@@ -19,7 +19,10 @@ type private ConfigurationSource() =
 and private ConfigurationProvider(source) =
     inherit FileConfigurationProvider(source)
 
-    let deserializer = YamlDotNet.Serialization.DeserializerBuilder().Build()
+    let deserializer = 
+        YamlDotNet.Serialization.DeserializerBuilder()
+            .IgnoreUnmatchedProperties()
+            .Build()
 
     let toData (data: Dictionary<obj, obj>) =
         let result = Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -54,9 +57,8 @@ and private ConfigurationProvider(source) =
         result
 
     override this.Load(stream: Stream) =
-
-        let yaml = deserializer.Deserialize<Dictionary<obj, obj>>(new StreamReader(stream))
-
+        use reader = new StreamReader(stream)
+        let yaml = deserializer.Deserialize<Dictionary<obj, obj>>(reader)
         this.Data <- yaml |> toData
 
 let private addFileWithOptions

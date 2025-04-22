@@ -20,7 +20,7 @@ type NodeId =
         match this with
         | NodeIdValue id -> id
 
-    static member create(value: string) =
+    static member parse(value: string) =
         match value |> String.IsNullOrWhiteSpace with
         | false -> NodeIdValue value |> Ok
         | true -> $"NodeId value '{value}' is not supported." |> NotSupported |> Error

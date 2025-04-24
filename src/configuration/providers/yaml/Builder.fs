@@ -19,10 +19,8 @@ type private ConfigurationSource() =
 and private ConfigurationProvider(source) =
     inherit FileConfigurationProvider(source)
 
-    let deserializer = 
-        YamlDotNet.Serialization.DeserializerBuilder()
-            .IgnoreUnmatchedProperties()
-            .Build()
+    let deserializer =
+        YamlDotNet.Serialization.DeserializerBuilder().IgnoreUnmatchedProperties().Build()
 
     let toData (data: Dictionary<obj, obj>) =
         let result = Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

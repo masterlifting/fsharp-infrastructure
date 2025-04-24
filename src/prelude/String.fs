@@ -50,7 +50,7 @@ let encrypt (key: string) (plaintext: string) =
         let ciphertext = Array.zeroCreate<byte> plaintextBytes.Length
         let tag = Array.zeroCreate<byte> 16
         aes.Encrypt(nonce, plaintextBytes, ciphertext, tag)
-        let combined = Array.concat [nonce; tag; ciphertext]
+        let combined = Array.concat [ nonce; tag; ciphertext ]
         Convert.ToBase64String(combined) |> Ok
     with ex ->
         Error

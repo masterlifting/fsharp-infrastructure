@@ -2,6 +2,7 @@
 
 open Microsoft.Extensions.Configuration
 open Infrastructure.Domain
+open Infrastructure.Prelude
 open Infrastructure.Configuration.Domain
 open Infrastructure.Configuration.Providers.Builder
 
@@ -15,6 +16,6 @@ let init (connection: Connection) =
     with ex ->
         Error
         <| Operation {
-            Message = ex.Message
+            Message = ex |> Exception.toMessage
             Code = (__SOURCE_DIRECTORY__, __SOURCE_FILE__, __LINE__) |> Line |> Some
         }

@@ -35,7 +35,8 @@
     <Compile Include="logging\providers\console\Provider.fs" />
     <Compile Include="logging\Client.fs" />
     <Compile Include="logging\Log.fs" />
-    <Compile Include="SerDe.fs" />
+    <Compile Include="serde\Yaml.fs" />
+    <Compile Include="serde\Json.fs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

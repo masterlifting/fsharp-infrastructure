@@ -6,4 +6,3 @@ let toMessage (ex: exn) =
     |> Option.ofObj
     |> Option.map _.Message
     |> Option.defaultValue ex.Message
-    |> fun msg -> $"Error: '%s{msg}'"

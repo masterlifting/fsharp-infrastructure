@@ -12,3 +12,10 @@ let map next asyncWorkflow =
         let! result = asyncWorkflow
         return next result
     }
+
+let apply f =
+    bind (fun asyncWorkflow ->
+        f
+        |> map (function
+            | Ok _ -> asyncWorkflow
+            | Error error -> Error error))

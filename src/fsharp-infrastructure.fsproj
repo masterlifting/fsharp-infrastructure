@@ -20,6 +20,7 @@
     <Compile Include="prelude\ResultAsync.fs" />
     <Compile Include="prelude\Graph.fs" />
     <Compile Include="prelude\String.fs" />
+    <Compile Include="prelude\TimeSpan.fs" />
     <Compile Include="prelude\ActivePattern.fs" />
     <Compile Include="prelude\ComputationExpression.fs" />
     <Compile Include="configuration\providers\Domain.fs" />

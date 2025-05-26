@@ -68,3 +68,9 @@ type Error' =
         | NotSupported _ -> NotSupported msg
         | NotImplemented _ -> NotImplemented msg
         | Canceled _ -> Canceled msg
+
+type Retry<'a> = {
+    Delay: int
+    Attempts: uint<attempts>
+    Perform: unit -> Async<Result<'a, Error'>>
+}

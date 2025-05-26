@@ -40,12 +40,15 @@ let retry (model: Retry<_>) =
             match! model.Perform() with
             | Ok result -> return Ok result
             | Error e ->
-                if attempts = 0u<attempts> then
-                    return Error e
-                else
-                    do! Async.Sleep delay
-                    let delay = delay |> increase
-                    return! performRetry (attempts - 1u<attempts>) delay
+                match e with
+                | Canceled _ -> return Error e
+                | _ ->
+                    match attempts = 0u<attempts> with
+                    | true -> return Error e
+                    | false ->
+                        do! Async.Sleep delay
+                        let delay = delay |> increase
+                        return! performRetry (attempts - 1u<attempts>) delay
         }
 
     performRetry model.Attempts model.Delay

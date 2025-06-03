@@ -18,11 +18,10 @@ let init connection =
 
 let tryGetSection<'a> sectionName (configuration: IConfigurationRoot) =
     configuration.GetSection(sectionName)
-    |> Option.ofObj
-    |> Option.bind (fun section ->
+    |> fun section ->
         match section.Exists() with
         | true -> section |> Parser.parse<'a> sectionName |> Some
-        | false -> None)
+        | false -> None
 
 let private getEnv key =
     try

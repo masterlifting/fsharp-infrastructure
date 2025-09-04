@@ -8,7 +8,7 @@
     <Compile Include="domain\Measures.fs" />
     <Compile Include="domain\Error.fs" />
     <Compile Include="domain\Identifier.fs" />
-    <Compile Include="domain\Graph.fs" />
+    <Compile Include="domain\Tree.fs" />
     <Compile Include="domain\Culture.fs" />
     <Compile Include="prelude\Exception.fs" />
     <Compile Include="prelude\Threading.fs" />
@@ -18,7 +18,7 @@
     <Compile Include="prelude\Option.fs" />
     <Compile Include="prelude\Result.fs" />
     <Compile Include="prelude\ResultAsync.fs" />
-    <Compile Include="prelude\Graph.fs" />
+    <Compile Include="prelude\Tree.fs" />
     <Compile Include="prelude\String.fs" />
     <Compile Include="prelude\TimeSpan.fs" />
     <Compile Include="prelude\ActivePattern.fs" />

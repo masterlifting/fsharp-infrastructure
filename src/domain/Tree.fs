@@ -1,5 +1,5 @@
 ﻿[<RequireQualifiedAccess>]
-module Infrastructure.Domain.Graph
+module Infrastructure.Domain.Tree
 
 open System
 open Infrastructure.Domain
@@ -36,7 +36,7 @@ type NodeId =
         ids |> Seq.exists (fun id -> id.IsIn this)
 
 /// <summary>
-/// Represents a node in a graph.
+/// Represents a node in a tree.
 /// </summary>
 type INode =
     abstract member Id: NodeId

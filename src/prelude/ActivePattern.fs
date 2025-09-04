@@ -63,7 +63,7 @@ let (|IsLettersOrNumbers|_|) (input: string) =
     | true -> Some input
     | _ -> None
 
-let (|Leaf|Node|) (input: Graph.Node<_>) =
+let (|Leaf|Node|) (input: Tree.Node<_>) =
     match input.Children with
     | [] -> Leaf input.Value
     | _ -> Node input

@@ -17,7 +17,7 @@ let init connection =
     | Connection.Yaml value -> value |> Yaml.Provider.init
 
 let tryGetSection<'a> sectionName (configuration: IConfigurationRoot) =
-    configuration.GetSection(sectionName)
+    configuration.GetSection sectionName
     |> fun section ->
         match section.Exists() with
         | true -> section |> Parser.parse<'a> sectionName |> Some
@@ -26,7 +26,7 @@ let tryGetSection<'a> sectionName (configuration: IConfigurationRoot) =
 let private getEnv key =
     try
         Ok
-        <| match Environment.GetEnvironmentVariable(key) with
+        <| match Environment.GetEnvironmentVariable key with
            | AP.IsString value -> Some value
            | _ -> None
     with ex ->

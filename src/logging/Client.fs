@@ -9,9 +9,9 @@ type Provider =
     | Console of Level
     | File of Level
 
-let getLevel ()=
+let getLevel () =
     match Configuration.Client.getEnv "LOG_LEVEL" with
-    | Ok (Some value) -> value |> Builder.parseLevel
+    | Ok(Some value) -> value |> Builder.parseLevel
     | Ok None -> Information
     | Error _ -> Information
 

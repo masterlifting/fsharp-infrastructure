@@ -9,10 +9,11 @@ type Provider =
     | Console of Level
     | File of Level
 
-let getLevel cfg =
-    match cfg |> Configuration.Client.tryGetSection<string> CFG_DEFAULT_SECTION_NAME with
-    | Some value -> value |> Builder.parseLevel
-    | None -> Information
+let getLevel ()=
+    match Configuration.Client.getEnv "LOG_LEVEL" with
+    | Ok (Some value) -> value |> Builder.parseLevel
+    | Ok None -> Information
+    | Error _ -> Information
 
 let init provider =
     match provider with

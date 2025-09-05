@@ -17,7 +17,4 @@ type internal Logger = {
     logSuccess: string -> unit
 }
 
-[<Literal>]
-let internal CFG_DEFAULT_SECTION_NAME = "Logging:LogLevel:Default"
-
 let mutable internal LoggerState: Logger option = None

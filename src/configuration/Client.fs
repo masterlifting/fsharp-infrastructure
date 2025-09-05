@@ -13,8 +13,8 @@ type Connection =
 
 let init connection =
     match connection with
-    | Connection.Json value -> value |> Json.Provider.init
-    | Connection.Yaml value -> value |> Yaml.Provider.init
+    | Json value -> value |> Json.Provider.init
+    | Yaml value -> value |> Yaml.Provider.init
 
 let tryGetSection<'a> sectionName (configuration: IConfigurationRoot) =
     configuration.GetSection sectionName
@@ -23,7 +23,7 @@ let tryGetSection<'a> sectionName (configuration: IConfigurationRoot) =
         | true -> section |> Parser.parse<'a> sectionName |> Some
         | false -> None
 
-let private getEnv key =
+let getEnv key =
     try
         Ok
         <| match Environment.GetEnvironmentVariable key with

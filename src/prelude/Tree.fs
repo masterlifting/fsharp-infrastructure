@@ -71,13 +71,10 @@ type Node<'T> =
         }
 
     member this.Add(child: Node<'T>) =
-        if this.Children |> Seq.exists (fun c -> c.Id = child.Id) then
-            false
-        else
+        if not (this.Children |> Seq.exists (fun c -> c.Id = child.Id)) then
             this.Children.Add child
-            true
 
-type Tree<'T> =
+type Root<'T> =
     {
         Root: Node<'T>
         Delimiter: char

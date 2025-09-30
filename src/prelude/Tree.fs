@@ -103,11 +103,31 @@ module NodeBuilder =
     /// Create a node with children
     let nodeWith id value children = Node<'T>.CreateWithChildren(id, value, children)
     
-    /// Functional operator to add a child to a node
+    /// Pipe-friendly function to add a single child
+    let withChild (child: Node<'T>) (parent: Node<'T>) = parent.WithChild(child)
+    
+    /// Pipe-friendly function to add multiple children
+    let withChildren (children: Node<'T> list) (parent: Node<'T>) = parent.WithChildren(children)
+    
+    /// Custom operators for tree building
+    
+    /// Functional operator to add a child to a node: parent ++ child
     let inline (++) (parent: Node<'T>) (child: Node<'T>) = parent.WithChild(child)
     
-    /// Functional operator to add multiple children to a node  
+    /// Functional operator to add multiple children to a node: parent +++ [child1; child2]
     let inline (+++) (parent: Node<'T>) (children: Node<'T> list) = parent.WithChildren(children)
+    
+    /// Tree building operator: parent |+ child (alternative to ++)
+    let inline (|+) (parent: Node<'T>) (child: Node<'T>) = parent.WithChild(child)
+    
+    /// Tree building operator: parent |++ [children] (alternative to +++)
+    let inline (|++) (parent: Node<'T>) (children: Node<'T> list) = parent.WithChildren(children)
+    
+    /// Reverse tree building operator: child +| parent (adds child to parent)
+    let inline (+|) (child: Node<'T>) (parent: Node<'T>) = parent.WithChild(child)
+    
+    /// Collection building operator: [children] ++| parent (adds children to parent)
+    let inline (++|) (children: Node<'T> list) (parent: Node<'T>) = parent.WithChildren(children)
 
 type Root<'T> =
     {

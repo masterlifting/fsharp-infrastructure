@@ -70,9 +70,44 @@ type Node<'T> =
             Children = ResizeArray<Node<'T>>()
         }
 
+    /// Create a node with children in a functional style
+    static member CreateWithChildren(id: string, value: 'T, children: Node<'T> list) =
+        let node = Node<'T>.Create(id, value)
+        children |> List.iter node.Add
+        node
+
+    /// Create a node and add a single child
+    static member CreateWith(id: string, value: 'T, child: Node<'T>) =
+        Node<'T>.CreateWithChildren(id, value, [child])
+
     member this.Add(child: Node<'T>) =
         if not (this.Children |> Seq.exists (fun c -> c.Id = child.Id)) then
             this.Children.Add child
+
+    /// Functional method to add children and return the parent node
+    member this.WithChildren(children: Node<'T> list) =
+        children |> List.iter this.Add
+        this
+
+    /// Functional method to add a single child and return the parent node
+    member this.WithChild(child: Node<'T>) =
+        this.Add child
+        this
+
+/// Builder functions for creating trees in a functional way
+module NodeBuilder =
+    
+    /// Create a node with id and value
+    let node id value = Node<'T>.Create(id, value)
+    
+    /// Create a node with children
+    let nodeWith id value children = Node<'T>.CreateWithChildren(id, value, children)
+    
+    /// Functional operator to add a child to a node
+    let inline (++) (parent: Node<'T>) (child: Node<'T>) = parent.WithChild(child)
+    
+    /// Functional operator to add multiple children to a node  
+    let inline (+++) (parent: Node<'T>) (children: Node<'T> list) = parent.WithChildren(children)
 
 type Root<'T> =
     {

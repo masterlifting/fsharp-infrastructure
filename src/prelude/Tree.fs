@@ -45,37 +45,26 @@ module BFS =
         [ tree ] |> search
 
 
-type Node<'T> =
-    {
-        Id: string
-        Value: 'T
-        Children: ResizeArray<Node<'T>>
-    }
+type Node<'T> private (id: string, value: 'T, children: ResizeArray<Node<'T>>) =
+    
+    member _.Id = id
+    member _.Value = value
+    member _.Children : Node<'T> seq = children :> Node<'T> seq
 
     static member Create(id: string, value: 'T) =
-        {
-            Id = id
-            Value = value
-            Children = ResizeArray<Node<'T>>()
-        }
+        Node(id, value, ResizeArray<Node<'T>>())
 
-    member this.Add(child: Node<'T>) =
-        if not (this.Children |> Seq.exists (fun c -> c.Id = child.Id)) then
-            this.Children.Add child
+    member private _.Add(child: Node<'T>) =
+        if not (children |> Seq.exists (fun c -> c.Id = child.Id)) then
+            children.Add child
 
-    member this.WithChildren(children: Node<'T> list) =
-        children |> List.iter this.Add
-        this
-
-    member this.WithChild(child: Node<'T>) =
+    member this.AddChild(child: Node<'T>) =
         this.Add child
         this
 
-module NodeBuilder =
-    
-    let withChild (child: Node<'T>) (parent: Node<'T>) = parent.WithChild child
-    
-    let withChildren (children: Node<'T> list) (parent: Node<'T>) = parent.WithChildren children
+    member this.AddChildren(children: Node<'T> seq) =
+        children |> Seq.iter this.Add
+        this
 
 type Root<'T> =
     {
@@ -89,7 +78,7 @@ type Root<'T> =
             Delimiter = '.'
         }
 
-    member this.Find(id: string) =
+    member this.FindNode(id: string) =
         if System.String.IsNullOrWhiteSpace id then
             None
         else
@@ -100,14 +89,24 @@ type Root<'T> =
             else
                 this.FindRecursive(this.Root, ids, 1)
 
+    member this.FindValue(id: string) =
+       this.FindNode id
+       |> Option.map (fun (v: Node<'T>) -> v.Value)
+
     member this.Contains(path: string) =
-        this.Find(path).IsSome
+        this.FindValue(path).IsSome
 
     member private this.FindRecursive(node: Node<'T>, parts: string[], index: int) =
         if index >= parts.Length then
-            Some node.Value
+            Some node
         else
             let child = node.Children |> Seq.tryFind (fun c -> c.Id = parts.[index])
             match child with
             | Some c -> this.FindRecursive(c, parts, index + 1)
             | None -> None
+
+module NodeBuilder =
+    
+    let withChild (child: Node<'T>) (parent: Node<'T>) = parent.AddChild child
+
+    let withChildren (children: Node<'T> seq) (parent: Node<'T>) = parent.AddChildren children

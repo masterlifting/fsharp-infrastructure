@@ -64,6 +64,6 @@ let (|IsLettersOrNumbers|_|) (input: string) =
     | _ -> None
 
 let (|Leaf|Node|) (input: Tree.Node<_>) =
-    match input.Children with
-    | [] -> Leaf input.Value
-    | _ -> Node input
+    match input.Children |> Seq.isEmpty with
+    | true -> Leaf input.Value
+    | false -> Node input

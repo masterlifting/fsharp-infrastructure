@@ -2,69 +2,48 @@
 module Infrastructure.Domain.Tree
 
 open System
-open Infrastructure.Domain
 
-[<Literal>]
-let private DELIMITER = "."
+type Node<'T> private (id: string, value: 'T, children: ResizeArray<Node<'T>>) =
 
-type NodeId =
-    | NodeIdValue of string
+    member _.Id = id
+    member _.Value = value
+    member _.Children: Node<'T> seq = children :> Node<'T> seq
 
-    member this.Value =
-        match this with
-        | NodeIdValue id -> id
+    static member create(id: string, value: 'T) =
+        Node(id, value, ResizeArray<Node<'T>>())
 
-    static member parse(value: string) =
-        match value |> String.IsNullOrWhiteSpace with
-        | false -> NodeIdValue value |> Ok
-        | true -> $"NodeId value '{value}' is not supported." |> NotSupported |> Error
+    member private _.Add(child: Node<'T>) =
+        if not (children |> Seq.exists (fun c -> c.Id = child.Id)) then
+            children.Add child
 
-    static member createNew() = Guid.NewGuid() |> string |> NodeIdValue
+    member internal this.AddChild(child: Node<'T>) =
+        this.Add child
+        this
 
-    static member combine(nodeIds: NodeId seq) =
-        nodeIds |> Seq.map _.Value |> String.concat DELIMITER |> NodeIdValue
+    member internal this.AddChildren(children: Node<'T> seq) =
+        children |> Seq.iter this.Add
+        this
 
-    static member splitValues(id: NodeId) =
-        DELIMITER |> id.Value.Split |> List.ofArray
+    member internal this.FindNode(id: string) =
+        if String.IsNullOrWhiteSpace id then
+            None
+        else
+            let parts = id.Split('.', StringSplitOptions.RemoveEmptyEntries)
 
-    static member split(id: NodeId) =
-        id |> NodeId.splitValues |> Seq.map NodeIdValue
+            if parts.Length = 0 || parts.[0] <> this.Id then
+                None
+            else
+                this.FindRecursive(this, parts, 1)
 
-    member this.IsIn(id: NodeId) = this.Value.Contains id.Value
+    member internal this.FindValue(id: string) =
+        this.FindNode id |> Option.map (fun (v: Node<'T>) -> v.Value)
 
-    member this.IsInSeq(ids: NodeId seq) =
-        ids |> Seq.exists (fun id -> id.IsIn this)
-
-/// <summary>
-/// Represents a node in a tree.
-/// </summary>
-type INode =
-    abstract member Id: NodeId
-    abstract member set: NodeId -> INode
-
-type Node<'a when 'a :> INode> =
-    | Node of 'a * Node<'a> list
-
-    member this.Value =
-        match this with
-        | Node(current, _) -> current
-
-    member this.Id = this.Value.Id
-    member this.ShortId = DELIMITER |> this.Id.Value.Split |> Array.last |> NodeIdValue
-
-    member private this.GetChildren(id: NodeId) =
-        match this with
-        | Node(_, children) ->
-            children
-            |> List.map (fun node ->
-                let id = [ id.Value; node.Id.Value ] |> String.concat DELIMITER |> NodeIdValue
-
-                let value = id |> node.Value.set :?> 'a
-
-                let children =
-                    match node with
-                    | Node(_, children) -> children
-
-                Node(value, children))
-
-    member this.Children = this.Id |> this.GetChildren
+    member internal this.Contains(path: string) = this.FindValue(path).IsSome
+    
+    member private this.FindRecursive(current: Node<'T>, ids: string[], index: int) =
+        if index >= ids.Length then
+            Some current
+        else
+            current.Children
+            |> Seq.tryFind (fun c -> c.Id = ids.[index])
+            |> Option.bind (fun child -> this.FindRecursive(child, ids, index + 1))

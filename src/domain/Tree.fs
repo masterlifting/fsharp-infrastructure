@@ -20,6 +20,22 @@ type NodeId =
     static member split (NodeId id) =
         id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
         |> Array.toList
+    
+    static member contains (parts: string seq) (NodeId id) =
+        let idParts = id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries) |> Array.toList
+        let partsList = parts |> Seq.toList
+        
+        let rec isSubsequence (sub: string list) (lst: string list) =
+            match sub, lst with
+            | [], _ -> true
+            | _, [] -> false
+            | x::xs, y::ys when x = y -> isSubsequence xs ys
+            | x::xs, y::ys -> isSubsequence (x::xs) ys
+        
+        isSubsequence partsList idParts
+
+    static member combine (parts: string seq) =
+        parts |> String.concat (Delimiter.ToString()) |> NodeId.create
 
 type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children: ResizeArray<Node<'T>>) =
     member private _.CurrentId = id

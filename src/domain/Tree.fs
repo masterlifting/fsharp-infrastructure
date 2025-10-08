@@ -30,7 +30,7 @@ type NodeId =
             | [], _ -> true
             | _, [] -> false
             | x::xs, y::ys when x = y -> isSubsequence xs ys
-            | x::xs, y::ys -> isSubsequence (x::xs) ys
+            | x::xs, _ ::ys -> isSubsequence (x::xs) ys
         
         isSubsequence partsList idParts
 
@@ -38,11 +38,7 @@ type NodeId =
         parts |> String.concat (Delimiter.ToString()) |> NodeId.create
 
 type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children: ResizeArray<Node<'T>>) =
-    member private _.CurrentId = id
-    member _.Id: NodeId =
-        match parent with
-        | Some p -> $"%s{p.Id.Value}%c{Delimiter}%s{id}" |> NodeId.create
-        | None -> id |> NodeId.create
+    member _.Id = NodeId.create id
     member _.Value = value
     member _.Parent = parent
     member _.Children: Node<'T> seq = children :> Node<'T> seq
@@ -51,8 +47,8 @@ type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children:
         Node(id, value, None, ResizeArray<Node<'T>>())
 
     member private this.Add(child: Node<'T>) =
-        if not (children |> Seq.exists (fun c -> c.CurrentId = child.CurrentId)) then
-            let child = Node(child.CurrentId, child.Value, Some this, child.Children |> ResizeArray)
+        if not (children |> Seq.exists (fun c -> c.Id = child.Id)) then
+            let child = Node(child.Id.Value, child.Value, Some this, child.Children |> ResizeArray)
             children.Add child
 
     member internal this.AddChild(child: Node<'T>) =
@@ -69,7 +65,7 @@ type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children:
         else
             let parts = id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
 
-            if parts.Length = 0 || parts.[0] <> this.CurrentId then
+            if parts.Length = 0 || parts[0] <> this.Id.Value then
                 None
             else
                 this.FindRecursive(this, parts, 1)
@@ -84,5 +80,5 @@ type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children:
             Some current
         else
             current.Children
-            |> Seq.tryFind (fun c -> c.CurrentId = ids.[index])
+            |> Seq.tryFind (fun c -> c.Id.Value = ids[index])
             |> Option.bind (fun child -> this.FindRecursive(child, ids, index + 1))

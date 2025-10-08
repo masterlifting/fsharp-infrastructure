@@ -9,8 +9,8 @@ module Builder =
 
     let withChildren (children: Tree.Node<'T> seq) (parent: Tree.Node<'T>) = parent.AddChildren children
 
-let findNode (nodeId: string) =
-    fun (node: Tree.Node<'T>) -> node.FindNode nodeId
+let findNode (nodeId: Tree.NodeId) =
+    fun (node: Tree.Node<'T>) -> node.FindNode nodeId.Value
 
-let findValue (nodeId: string) =
-    fun (node: Tree.Node<'T>) -> node.FindValue nodeId
+let findValue (nodeId: Tree.NodeId) =
+    fun (node: Tree.Node<'T>) -> node.FindValue nodeId.Value

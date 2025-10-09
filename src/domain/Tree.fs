@@ -38,17 +38,25 @@ type NodeId =
         parts |> String.concat (Delimiter.ToString()) |> NodeId.create
 
 type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children: ResizeArray<Node<'T>>) =
-    member _.Id = NodeId.create id
+    member _.Id = id
+    member _.FullId: NodeId =
+        match parent with
+        | None -> id
+        | Some p -> $"{p.FullId.Value}{Delimiter}{id}"
+        |> NodeId.create
     member _.Value = value
     member _.Parent = parent
-    member _.Children: Node<'T> seq = children :> Node<'T> seq
-
+    member this.Children: Node<'T> seq =
+        children |> Seq.map(fun c -> Node (c.Id, c.Value, Some this, c.Children |> ResizeArray))
+    static member Empty =
+        Node("", Unchecked.defaultof<'T>, None, ResizeArray<Node<'T>>())
+    
     static member create(id: string, value: 'T) =
         Node(id, value, None, ResizeArray<Node<'T>>())
-
+        
     member private this.Add(child: Node<'T>) =
         if not (children |> Seq.exists (fun c -> c.Id = child.Id)) then
-            let child = Node(child.Id.Value, child.Value, Some this, child.Children |> ResizeArray)
+            let child = Node(child.Id, child.Value, Some this, child.Children |> ResizeArray)
             children.Add child
 
     member internal this.AddChild(child: Node<'T>) =
@@ -65,7 +73,7 @@ type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children:
         else
             let parts = id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
 
-            if parts.Length = 0 || parts[0] <> this.Id.Value then
+            if parts.Length = 0 || parts[0] <> this.Id then
                 None
             else
                 this.FindRecursive(this, parts, 1)
@@ -80,5 +88,5 @@ type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children:
             Some current
         else
             current.Children
-            |> Seq.tryFind (fun c -> c.Id.Value = ids[index])
+            |> Seq.tryFind (fun c -> c.Id = ids[index])
             |> Option.bind (fun child -> this.FindRecursive(child, ids, index + 1))

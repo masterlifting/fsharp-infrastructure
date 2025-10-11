@@ -14,27 +14,26 @@ type NodeId =
         match this with
         | NodeId id -> id
 
-    static member create value =
-        NodeId value
+    static member create value = NodeId value
 
-    static member split (NodeId id) =
-        id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
-        |> Array.toList
-    
+    static member split(NodeId id) =
+        id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries) |> Array.toList
+
     static member contains (parts: string seq) (NodeId id) =
-        let idParts = id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries) |> Array.toList
+        let idParts =
+            id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries) |> Array.toList
         let partsList = parts |> Seq.toList
-        
+
         let rec isSubsequence (sub: string list) (lst: string list) =
             match sub, lst with
             | [], _ -> true
             | _, [] -> false
-            | x::xs, y::ys when x = y -> isSubsequence xs ys
-            | x::xs, _ ::ys -> isSubsequence (x::xs) ys
-        
+            | x :: xs, y :: ys when x = y -> isSubsequence xs ys
+            | x :: xs, _ :: ys -> isSubsequence (x :: xs) ys
+
         isSubsequence partsList idParts
 
-    static member combine (parts: string seq) =
+    static member combine(parts: string seq) =
         parts |> String.concat (Delimiter.ToString()) |> NodeId.create
 
     override this.ToString() = this.Value
@@ -49,16 +48,17 @@ type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children:
     member _.Value = value
     member _.Parent = parent
     member this.Children: Node<'T> seq =
-        children |> Seq.map(fun c -> Node (c.CurrentId, c.Value, Some this, c.Children |> ResizeArray))
-    static member Empty =
-        Node("", Unchecked.defaultof<'T>, None, ResizeArray<Node<'T>>())
-    
+        children
+        |> Seq.map (fun c -> Node(c.CurrentId, c.Value, Some this, c.Children |> ResizeArray))
+    static member Empty = Node("", Unchecked.defaultof<'T>, None, ResizeArray<Node<'T>>())
+
     static member create(id: string, value: 'T) =
         Node(id, value, None, ResizeArray<Node<'T>>())
-        
+
     member private this.Add(child: Node<'T>) =
         if not (children |> Seq.exists (fun c -> c.Id = child.Id)) then
-            let child = Node(child.CurrentId, child.Value, Some this, child.Children |> ResizeArray)
+            let child =
+                Node(child.CurrentId, child.Value, Some this, child.Children |> ResizeArray)
             children.Add child
 
     member internal this.AddChild(child: Node<'T>) =
@@ -70,25 +70,23 @@ type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children:
         this
 
     member internal this.FindNode(id: string) =
-        if String.IsNullOrWhiteSpace id then
-            None
-        else
-            let parts = id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
-
-            if parts.Length = 0 || parts[0] <> this.CurrentId then
-                None
-            else
-                this.FindRecursive(this, parts, 1)
+        let parts = id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
+        this.FindRecursive(this, parts, 0)
 
     member internal this.FindValue(id: string) =
         this.FindNode id |> Option.map (fun (v: Node<'T>) -> v.Value)
 
     member internal this.Contains(path: string) = this.FindValue(path).IsSome
-    
-    member private this.FindRecursive(current: Node<'T>, ids: string[], index: int) =
-        if index >= ids.Length then
-            Some current
-        else
-            current.Children
-            |> Seq.tryFind (fun c -> c.CurrentId >= ids[index])
-            |> Option.bind (fun child -> this.FindRecursive(child, ids, index + 1))
+
+    member private this.FindRecursive(node: Node<'T>, ids: string[], index: int) =
+        match index with
+        | i when i >= ids.Length -> None
+        | i when ids[i] <> node.CurrentId -> None
+        | i when i = ids.Length - 1 -> Some node
+        | i ->
+            node.Children
+            |> Seq.tryPick (fun child ->
+                if child.CurrentId = ids[i + 1] then
+                    this.FindRecursive(child, ids, i + 1)
+                else
+                    None)

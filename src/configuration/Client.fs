@@ -16,7 +16,7 @@ let init connection =
     | Json value -> value |> Json.Provider.init
     | Yaml value -> value |> Yaml.Provider.init
 
-let tryGetSection<'a> sectionName (configuration: IConfigurationRoot) =
+let getSection<'a> sectionName (configuration: IConfigurationRoot) =
     configuration.GetSection sectionName
     |> fun section ->
         match section.Exists() with
@@ -32,10 +32,10 @@ let getEnv key =
     with ex ->
         Error <| NotFound ex.Message
 
-let tryGetEnv key (configuration: IConfigurationRoot option) =
+let getConfig key (configuration: IConfigurationRoot option) =
     match configuration with
     | Some config ->
-        match config |> tryGetSection<string> key with
+        match config |> getSection<string> key with
         | Some value -> Ok <| Some value
         | None -> getEnv key
     | None -> getEnv key

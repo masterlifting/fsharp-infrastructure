@@ -52,3 +52,16 @@ let defaultWith f asyncResult =
         let! result = asyncResult
         return Result.defaultWith f result
     }
+
+let apply f asyncResult =
+    async {
+        match! asyncResult with
+        | Ok result ->
+            match! f with
+            | Ok _ -> return Ok result
+            | Error err -> return Error err
+        | Error err ->
+            match! f with
+            | Ok _ -> return Error err
+            | Error _ -> return Error err
+    }

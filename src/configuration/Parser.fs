@@ -9,12 +9,13 @@ open Infrastructure.Prelude
 
 let private TypeHandlersMap =
     dict [
-        typeof<bool>, (false :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<bool>))
-        typeof<int>, (0 :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<int>))
-        typeof<float>, (0.0 :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<float>))
-        typeof<DateTime>, (DateTime.MinValue :> obj, fun (v: string | null) -> Convert.ChangeType(v, typeof<DateTime>))
-        typeof<TimeSpan>, (TimeSpan.Zero :> obj, fun (v: string | null) -> TimeSpan.Parse(String.toDefault v))
-        typeof<Guid>, (Guid.Empty :> obj, fun (v: string | null) -> Guid.Parse(String.toDefault v))
+        typeof<bool>, (false :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<bool>)))
+        typeof<int>, (0 :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<int>)))
+        typeof<float>, (0.0 :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<float>)))
+        typeof<DateTime>,
+        (DateTime.MinValue :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<DateTime>)))
+        typeof<TimeSpan>, (TimeSpan.Zero :> obj, (fun (v: string | null) -> TimeSpan.Parse(String.toDefault v)))
+        typeof<Guid>, (Guid.Empty :> obj, (fun (v: string | null) -> Guid.Parse(String.toDefault v)))
     ]
 
 let private arrayRegexCache = Collections.Generic.Dictionary<string, Regex>()

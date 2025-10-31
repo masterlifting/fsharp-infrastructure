@@ -4,24 +4,17 @@ module Infrastructure.Prelude.Async
 open System
 open Infrastructure.Domain
 
-let bind next asyncWorkflow =
+let bind next workflow =
     async {
-        let! result = asyncWorkflow
+        let! result = workflow
         return! next result
     }
 
-let map next asyncWorkflow =
+let map next workflow =
     async {
-        let! result = asyncWorkflow
+        let! result = workflow
         return next result
     }
-
-let apply f =
-    bind (fun asyncWorkflow ->
-        f
-        |> map (function
-            | Ok _ -> asyncWorkflow
-            | Error error -> Error error))
 
 let retry (model: Retry<_>) =
 

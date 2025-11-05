@@ -10,9 +10,29 @@ let private Delimiter = '.'
 type NodeId =
     | NodeId of string
 
+    /// <summary>
+    /// Gets the full string value of the NodeId.
+    /// </summary>
     member this.Value =
         match this with
         | NodeId id -> id
+
+    /// <summary>
+    /// Gets the individual string values of the NodeId.
+    /// </summary>
+    member this.Values =
+        match this with
+        | NodeId id -> id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries) |> Array.toList
+
+    /// <summary>
+    /// Gets the current value of the NodeId (the last segment).
+    /// </summary>
+    member this.CurrentValue =
+        match this with
+        | NodeId id ->
+            id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
+            |> Array.tryLast
+            |> Option.defaultValue this.Value
 
     static member create value = NodeId value
 
@@ -39,7 +59,6 @@ type NodeId =
     override this.ToString() = this.Value
 
 type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children: ResizeArray<Node<'T>>) =
-    member _.CurrentId = id
     member _.Id: NodeId =
         match parent with
         | None -> id
@@ -49,7 +68,7 @@ type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children:
     member _.Parent = parent
     member this.Children: Node<'T> seq =
         children
-        |> Seq.map (fun c -> Node(c.CurrentId, c.Value, Some this, c.Children |> ResizeArray))
+        |> Seq.map (fun c -> Node(c.Id.CurrentValue, c.Value, Some this, c.Children |> ResizeArray))
     static member Empty = Node("", Unchecked.defaultof<'T>, None, ResizeArray<Node<'T>>())
 
     static member create(id: string, value: 'T) =
@@ -58,7 +77,7 @@ type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children:
     member private this.Add(child: Node<'T>) =
         if not (children |> Seq.exists (fun c -> c.Id = child.Id)) then
             let child =
-                Node(child.CurrentId, child.Value, Some this, child.Children |> ResizeArray)
+                Node(child.Id.CurrentValue, child.Value, Some this, child.Children |> ResizeArray)
             children.Add child
 
     member internal this.AddChild(child: Node<'T>) =
@@ -81,12 +100,12 @@ type Node<'T> private (id: string, value: 'T, parent: Node<'T> option, children:
     member private this.FindRecursive(node: Node<'T>, ids: string[], index: int) =
         match index with
         | i when i >= ids.Length -> None
-        | i when ids[i] <> node.CurrentId -> None
+        | i when ids[i] <> node.Id.CurrentValue -> None
         | i when i = ids.Length - 1 -> Some node
         | i ->
             node.Children
             |> Seq.tryPick (fun child ->
-                if child.CurrentId = ids[i + 1] then
+                if child.Id.CurrentValue = ids[i + 1] then
                     this.FindRecursive(child, ids, i + 1)
                 else
                     None)

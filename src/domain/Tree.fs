@@ -39,19 +39,19 @@ type NodeId =
     static member split(NodeId id) =
         id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries) |> Array.toList
 
-    static member contains (parts: string seq) (NodeId id) =
-        let idParts =
-            id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries) |> Array.toList
-        let partsList = parts |> Seq.toList
+    static member contains (id: NodeId) (ids: NodeId seq) =
+        let idParts = id |> NodeId.split
+        ids
+        |> Seq.exists (fun otherId ->
+            let otherIds = otherId |> NodeId.split
 
-        let rec isSubsequence (sub: string list) (lst: string list) =
-            match sub, lst with
-            | [], _ -> true
-            | _, [] -> false
-            | x :: xs, y :: ys when x = y -> isSubsequence xs ys
-            | x :: xs, _ :: ys -> isSubsequence (x :: xs) ys
-
-        isSubsequence partsList idParts
+            otherIds
+            |> List.mapi (fun index part ->
+                if index = idParts.Length - 1 then
+                    List.init index (fun i -> otherIds[i] = idParts[i]) |> List.forall (fun b -> b)
+                else
+                    false)
+            |> List.pick (fun equal -> if equal then Some true else None))
 
     static member combine(parts: string seq) =
         parts |> String.concat (Delimiter.ToString()) |> NodeId.create

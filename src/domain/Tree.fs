@@ -36,22 +36,15 @@ type NodeId =
 
     static member create value = NodeId value
 
-    static member split(NodeId id) =
-        id.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries) |> Array.toList
-
-    static member contains (id: NodeId) (ids: NodeId seq) =
-        let idParts = id |> NodeId.split
-        ids
-        |> Seq.exists (fun otherId ->
-            let otherIds = otherId |> NodeId.split
-
-            otherIds
-            |> List.mapi (fun index part ->
-                if index = idParts.Length - 1 then
-                    List.init index (fun i -> otherIds[i] = idParts[i]) |> List.forall (fun b -> b)
-                else
-                    false)
-            |> List.pick (fun equal -> if equal then Some true else None))
+    static member contains (nodeId: NodeId) (nodeIds: NodeId seq) =
+        let nodeIdValues = nodeId.Values
+        nodeIds
+        |> Seq.exists (fun _nodeId ->
+            match _nodeId.Values.Length >= nodeIdValues.Length with
+            | false -> false
+            | true ->
+                let _nodeIdValues = _nodeId.Values
+                nodeIdValues |> List.mapi (fun i v -> v = _nodeIdValues[i]) |> List.forall id)
 
     static member combine(parts: string seq) =
         parts |> String.concat (Delimiter.ToString()) |> NodeId.create

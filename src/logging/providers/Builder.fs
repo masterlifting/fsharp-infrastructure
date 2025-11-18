@@ -2,15 +2,15 @@
 
 open Infrastructure.Logging.Domain
 
-let parseLevel level =
-    match level with
-    | "Error" -> Critical
-    | "Critical" -> Critical
-    | "Warn" -> Warning
-    | "Warning" -> Warning
-    | "Debug" -> Debug
-    | "Trace" -> Trace
-    | "Success" -> Success
+let parseLevel (level: string) =
+    match level.ToLower() with
+    | "error" -> Critical
+    | "critical" -> Critical
+    | "warn" -> Warning
+    | "warning" -> Warning
+    | "debug" -> Debug
+    | "trace" -> Trace
+    | "success" -> Success
     | _ -> Information
 
 let build level log =

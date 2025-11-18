@@ -16,14 +16,14 @@ let init connection =
     | Json value -> value |> Json.Provider.init
     | Yaml value -> value |> Yaml.Provider.init
 
-let getSection<'a> sectionName (configuration: IConfigurationRoot) =
-    configuration.GetSection sectionName
+let getValue<'a> key (cfg: IConfigurationRoot) =
+    cfg.GetSection key
     |> fun section ->
         match section.Exists() with
-        | true -> section |> Parser.parse<'a> sectionName |> Some
+        | true -> section |> Parser.parse<'a> key |> Some
         | false -> None
 
-let getEnv key =
+let getEnvValue key =
     try
         Ok
         <| match Environment.GetEnvironmentVariable key with
@@ -31,11 +31,3 @@ let getEnv key =
            | _ -> None
     with ex ->
         Error <| NotFound ex.Message
-
-let getConfig key (configuration: IConfigurationRoot option) =
-    match configuration with
-    | Some config ->
-        match config |> getSection<string> key with
-        | Some value -> Ok <| Some value
-        | None -> getEnv key
-    | None -> getEnv key

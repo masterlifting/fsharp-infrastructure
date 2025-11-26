@@ -53,12 +53,9 @@ let defaultWith f workflow =
         return Result.defaultWith f result
     }
 
-///<summary>
-///  Don't use async expression for f to avoid nested async
-/// </summary>
-let apply f =
-    Async.bind (fun asyncWorkflow ->
-        f
-        |> Async.map (function
-            | Ok _ -> asyncWorkflow
-            | Error error -> Error error))
+let apply f workflow =
+    async {
+        match! f with
+        | Ok _ -> return! workflow
+        | Error error -> return Error error
+    }

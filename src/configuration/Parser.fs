@@ -10,12 +10,42 @@ open Infrastructure.Prelude
 let private TypeHandlersMap =
     dict [
         typeof<bool>, (false :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<bool>)))
+        typeof<Nullable<bool>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToBoolean v)))
+        typeof<byte>, (0uy :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<byte>)))
+        typeof<Nullable<byte>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToByte v)))
+        typeof<sbyte>, (0y :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<sbyte>)))
+        typeof<Nullable<sbyte>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToSByte v)))
+        typeof<int8>, (0y :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<int8>)))
+        typeof<Nullable<int8>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToSByte v)))
+        typeof<uint8>, (0uy :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<uint8>)))
+        typeof<Nullable<uint8>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToByte v)))
+        typeof<int16>, (0s :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<int16>)))
+        typeof<Nullable<int16>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToInt16 v)))
+        typeof<uint16>, (0us :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<uint16>)))
+        typeof<Nullable<uint16>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToUInt16 v)))
         typeof<int>, (0 :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<int>)))
+        typeof<Nullable<int>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToInt32 v)))
+        typeof<uint32>, (0u :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<uint32>)))
+        typeof<Nullable<uint32>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToUInt32 v)))
+        typeof<int64>, (0L :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<int64>)))
+        typeof<Nullable<int64>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToInt64 v)))
+        typeof<uint64>, (0UL :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<uint64>)))
+        typeof<Nullable<uint64>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToUInt64 v)))
         typeof<float>, (0.0 :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<float>)))
+        typeof<Nullable<float>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToDouble v)))
+        typeof<double>, (0.0 :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<double>)))
+        typeof<Nullable<double>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToDouble v)))
+        typeof<decimal>, (0.0M :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<decimal>)))
+        typeof<Nullable<decimal>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToDecimal v)))
         typeof<DateTime>,
         (DateTime.MinValue :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<DateTime>)))
+        typeof<Nullable<DateTime>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToDateTime v)))
         typeof<TimeSpan>, (TimeSpan.Zero :> obj, (fun (v: string | null) -> TimeSpan.Parse(String.toDefault v)))
+        typeof<Nullable<TimeSpan>>,
+        (Nullable() :> obj, (fun (v: string | null) -> Nullable(TimeSpan.Parse(String.toDefault v))))
         typeof<Guid>, (Guid.Empty :> obj, (fun (v: string | null) -> Guid.Parse(String.toDefault v)))
+        typeof<Nullable<Guid>>,
+        (Nullable() :> obj, (fun (v: string | null) -> Nullable(Guid.Parse(String.toDefault v))))
     ]
 
 let private arrayRegexCache = Collections.Generic.Dictionary<string, Regex>()
@@ -27,9 +57,9 @@ let parse<'a> key (section: IConfigurationSection) =
         section.AsEnumerable()
         |> Seq.map (fun x ->
             if String.IsNullOrEmpty(x.Value) then
-                (x.Key, None)
+                x.Key, None
             else
-                (x.Key, Some x.Value))
+                x.Key, Some x.Value)
         |> Map.ofSeq
 
     let inline findValue key =
@@ -63,7 +93,7 @@ let parse<'a> key (section: IConfigurationSection) =
 
     let rec getValue key type' =
         match type' with
-        | valueType when valueType = typeof<string> -> findValue key |> Option.defaultValue String.Empty |> box
+        | valueType when valueType = typeof<string> -> findValue key |> Option.toObj |> box
         | valueType when valueType.IsValueType ->
             findValue key
             |> Option.map (fun v -> convertValue v valueType)

@@ -55,7 +55,26 @@ let defaultWith f workflow =
 
 let apply f workflow =
     async {
-        match! f with
-        | Ok _ -> return! workflow
-        | Error error -> return Error error
+        match! workflow with
+        | Ok w ->
+            match f with
+            | Ok() -> return Ok w
+            | Error errF -> return Error errF
+        | Error error ->
+            match f with
+            | Ok() -> return Error error
+            | Error errF -> return Error errF
+    }
+
+let applyAsync f workflow =
+    async {
+        match! workflow with
+        | Ok w ->
+            match! f with
+            | Ok() -> return Ok w
+            | Error errF -> return Error errF
+        | Error error ->
+            match! f with
+            | Ok() -> return Error error
+            | Error errF -> return Error errF
     }

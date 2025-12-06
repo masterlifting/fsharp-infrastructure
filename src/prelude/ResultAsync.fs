@@ -57,11 +57,11 @@ let apply f workflow =
     async {
         match! workflow with
         | Ok w ->
-            match f with
+            match f (Some w) with
             | Ok() -> return Ok w
             | Error errF -> return Error errF
         | Error error ->
-            match f with
+            match f None with
             | Ok() -> return Error error
             | Error errF -> return Error errF
     }
@@ -70,11 +70,11 @@ let applyAsync f workflow =
     async {
         match! workflow with
         | Ok w ->
-            match! f with
+            match! f (Some w) with
             | Ok() -> return Ok w
             | Error errF -> return Error errF
         | Error error ->
-            match! f with
+            match! f None with
             | Ok() -> return Error error
             | Error errF -> return Error errF
     }

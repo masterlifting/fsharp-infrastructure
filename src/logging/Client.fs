@@ -10,17 +10,17 @@ type Provider =
     | File of Level
 
 let setLevel cfg =
-    match cfg with
-    | Some cfg ->
-        cfg
-        |> Configuration.Client.getValue<string> "LOG_LEVEL"
-        |> Option.map Builder.parseLevel
-        |> Option.defaultValue Information
-    | None ->
-        match Configuration.Client.getEnvValue "LOG_LEVEL" with
-        | Ok(Some value) -> value |> Builder.parseLevel
-        | Ok None -> Information
-        | Error _ -> Information
+    match Configuration.Client.getEnvValue "LOG_LEVEL" with
+    | Error _ -> Information
+    | Ok(Some value) -> value |> Builder.parseLevel
+    | Ok None ->
+        match cfg with
+        | Some cfg ->
+            cfg
+            |> Configuration.Client.getValue<string> "LOG_LEVEL"
+            |> Option.map Builder.parseLevel
+            |> Option.defaultValue Information
+        | None -> Information
 
 let init provider =
     match provider with

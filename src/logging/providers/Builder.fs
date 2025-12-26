@@ -4,12 +4,19 @@ open Infrastructure.Logging.Domain
 
 let parseLevel (level: string) =
     match level.ToLower() with
+    | "err" -> Critical
     | "error" -> Critical
+    | "crt" -> Critical
+    | "crit" -> Critical
     | "critical" -> Critical
+    | "wrn" -> Warning
     | "warn" -> Warning
     | "warning" -> Warning
+    | "dbg" -> Debug
     | "debug" -> Debug
+    | "trc" -> Trace
     | "trace" -> Trace
+    | "scs" -> Success
     | "success" -> Success
     | _ -> Information
 

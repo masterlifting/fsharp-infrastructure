@@ -40,6 +40,12 @@ let private TypeHandlersMap =
         typeof<DateTime>,
         (DateTime.MinValue :> obj, (fun (v: string | null) -> Convert.ChangeType(v, typeof<DateTime>)))
         typeof<Nullable<DateTime>>, (Nullable() :> obj, (fun (v: string | null) -> Nullable(Convert.ToDateTime v)))
+        typeof<Nullable<DateOnly>>,
+        (Nullable() :> obj, (fun (v: string | null) -> Nullable(DateOnly.Parse(String.toDefault v))))
+        typeof<DateOnly>, (DateOnly.MinValue :> obj, (fun (v: string | null) -> DateOnly.Parse(String.toDefault v)))
+        typeof<Nullable<TimeOnly>>,
+        (Nullable() :> obj, (fun (v: string | null) -> Nullable(TimeOnly.Parse(String.toDefault v))))
+        typeof<TimeOnly>, (TimeOnly.MinValue :> obj, (fun (v: string | null) -> TimeOnly.Parse(String.toDefault v)))
         typeof<TimeSpan>, (TimeSpan.Zero :> obj, (fun (v: string | null) -> TimeSpan.Parse(String.toDefault v)))
         typeof<Nullable<TimeSpan>>,
         (Nullable() :> obj, (fun (v: string | null) -> Nullable(TimeSpan.Parse(String.toDefault v))))

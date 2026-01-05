@@ -148,14 +148,21 @@ let parse<'a> key (section: IConfigurationSection) =
             |> Option.defaultValue None
             |> box
         | valueType ->
-            let result = RuntimeHelpers.GetUninitializedObject(valueType)
-            let properties = valueType.GetProperties()
+            let regex = getOrAddGenericRegex key
 
-            properties
-            |> Array.iter (fun prop ->
-                let value = prop.PropertyType |> getValue $"{key}:{prop.Name}"
-                prop.SetValue(result, value))
+            let hasKeys = configMap.Keys |> Seq.exists regex.IsMatch
 
-            result
+            if not hasKeys then
+                null
+            else
+                let result = RuntimeHelpers.GetUninitializedObject valueType
+                let properties = valueType.GetProperties()
+
+                properties
+                |> Array.iter (fun prop ->
+                    let value = prop.PropertyType |> getValue $"{key}:{prop.Name}"
+                    prop.SetValue(result, value))
+
+                result
 
     typeof<'a> |> getValue key :?> 'a
